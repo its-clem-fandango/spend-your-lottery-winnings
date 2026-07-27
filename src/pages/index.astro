@@ -1,0 +1,85 @@
+---
+import { getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Game from '../components/Game.svelte';
+import itemsJson from '../data/items.json';
+import categoriesJson from '../data/categories.json';
+import type { Category, Item, ItemImage } from '../lib/types';
+
+const items = itemsJson as Item[];
+const categories = categoriesJson as Category[];
+
+/**
+ * Image optimisation happens here, at build time, and only the resulting URLs
+ * are handed to the island.
+ *
+ * This indirection is not optional: <Image /> is an Astro component and cannot
+ * be used inside a Svelte component, and the whole board lives inside one.
+ * getImage() gives the same pipeline — sharp, AVIF/WebP, responsive widths —
+ * with a serialisable result.
+ */
+const sources = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/items/*.{png,jpg,jpeg,webp,avif}',
+  { eager: true }
+);
+
+const WIDTHS = [210, 320, 420, 640];
+const images: Record<string, ItemImage> = {};
+
+for (const item of items) {
+  const mod = sources[`../assets/items/${item.image}`];
+  if (!mod) {
+    throw new Error(
+      `Missing artwork for "${item.id}": expected src/assets/items/${item.image}. ` +
+        `Run \`npm run verify:images\` to list everything that is missing.`
+    );
+  }
+
+  const [avif, webp] = await Promise.all([
+    getImage({ src: mod.default, format: 'avif', widths: WIDTHS, quality: 58 }),
+    getImage({ src: mod.default, format: 'webp', widths: WIDTHS, quality: 70 })
+  ]);
+
+  images[item.id] = {
+    src: webp.src,
+    avif: avif.srcSet.attribute,
+    webp: webp.srcSet.attribute,
+    width: 420,
+    height: 315
+  };
+}
+
+const title = 'Spend Your Lottery Winnings';
+const description = 'You won. Now get rid of it. A toy for spending money you do not have.';
+---
+
+<Base {title} {description}>
+  <!--
+    One island, hydrated on load rather than on idle: the amount field is the
+    first thing anyone touches and a deferred hydrate would eat the keystroke.
+    Astro server-renders it first, so the entry screen is real HTML in the
+    initial response.
+  -->
+  <Game client:load {items} {categories} {images} />
+
+  <noscript>
+    <div class="noscript">
+      <h1>Spend Your Lottery Winnings</h1>
+      <p>This one needs JavaScript — it's a toy about clicking things, after all.</p>
+    </div>
+  </noscript>
+</Base>
+
+<style>
+  .noscript {
+    min-height: 100dvh;
+    display: grid;
+    place-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--green-800);
+    color: var(--cream-2);
+  }
+  .noscript h1 { font-family: var(--display); font-size: 40px; margin: 0 0 12px; }
+  .noscript p { color: rgba(246, 239, 223, 0.7); margin: 0; }
+</style>

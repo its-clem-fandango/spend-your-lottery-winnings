@@ -1,0 +1,28 @@
+{
+  "name": "spend-your-lottery-winnings",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "verify:images": "node scripts/verify-images.mjs"
+  },
+  "dependencies": {
+    "@astrojs/svelte": "^9.0.1",
+    "astro": "^7.1.4",
+    "svelte": "^5.56.8"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@playwright/test": "^1.62.0",
+    "@types/node": "^26.1.2",
+    "sharp": "^0.35.3",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
