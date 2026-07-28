@@ -213,7 +213,7 @@ describe('verdict', () => {
 });
 
 describe('data integrity', () => {
-  it('has 34 items', () => expect(items).toHaveLength(34));
+  it('has 41 items', () => expect(items).toHaveLength(41));
 
   it('has unique ids and share codes', () => {
     expect(new Set(items.map((i) => i.id)).size).toBe(items.length);

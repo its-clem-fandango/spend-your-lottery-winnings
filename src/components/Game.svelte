@@ -4,10 +4,12 @@
   import Board from './Board.svelte';
   import CartDrawer from './CartDrawer.svelte';
   import Summary from './Summary.svelte';
+  import Tour from './Tour.svelte';
 
   import { afterTax } from '../lib/tax';
   import { shortMoney } from '../lib/money';
   import { encodeRun, decodeRun } from '../lib/share-code';
+  import { hasSeenTour, markTourSeen } from '../lib/tour';
   import {
     indexItems, spent as spentOf, remaining as remainingOf,
     itemCount, addItem, removeItem, isStuck, ranked
@@ -27,6 +29,7 @@
   let started = $state(false);
   let cartOpen = $state(false);
   let summaryOpen = $state(false);
+  let tourOpen = $state(false);
   let broke = $state(false);
   let shaking = $state(false);
   let flashing = $state(false);
@@ -69,9 +72,16 @@
     state = { gross, taxed, total, cart: {}, order: [] };
     started = true;
     window.scrollTo(0, 0);
+    // Marked at open, not at finish: the tour auto-runs exactly once, ever,
+    // however it's exited. Shared ?r= links never come through here.
+    if (!hasSeenTour()) {
+      tourOpen = true;
+      markTourSeen();
+    }
   }
 
   function restart() {
+    tourOpen = false;
     summaryOpen = false;
     cartOpen = false;
     started = false;
@@ -144,6 +154,7 @@
   }
 
   function onKeydown(e: KeyboardEvent) {
+    if (tourOpen) return; // the tour owns the keyboard while it's up
     if (e.key !== 'Escape') return;
     if (summaryOpen) summaryOpen = false;
     else if (cartOpen) cartOpen = false;
@@ -155,7 +166,7 @@
 {#if !started}
   <Entry onstart={start} />
 {:else}
-  <div class="game" class:shake={shaking} bind:this={root}>
+  <div class="game" class:shake={shaking} bind:this={root} inert={tourOpen}>
     <Topbar
       bind:this={topbar}
       total={state.total}
@@ -164,6 +175,7 @@
       {count}
       {broke}
       onopencart={() => (cartOpen = true)}
+      onhelp={() => { cartOpen = false; tourOpen = true; }}
     />
 
     <Board
@@ -209,6 +221,8 @@
     onclose={() => (summaryOpen = false)}
     onrestart={restart}
   />
+
+  <Tour open={tourOpen} onclose={() => (tourOpen = false)} />
 {/if}
 
 <style>

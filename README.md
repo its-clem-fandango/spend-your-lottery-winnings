@@ -37,16 +37,17 @@ src/
 │   ├── cart.ts            add/remove/totals reducer
 │   ├── share-code.ts      run ⇄ URL encoding
 │   ├── share-card.ts      canvas summary card
+│   ├── tour.ts            how-to-play tour steps + placement math
 │   └── verdict.ts
 ├── components/            Svelte — Game (island root), Entry, Topbar, Board,
-│                          ItemCard, CartDrawer, Summary
+│                          ItemCard, CartDrawer, Summary, Tour
 ├── layouts/Base.astro     document shell, meta, fonts
 ├── pages/index.astro      image pipeline + island mount
 └── styles/tokens.css      palette, type, shared button/utility classes
 ```
 
 `src/lib` is deliberately DOM-free. Tax brackets, cart arithmetic and share encoding are
-plain functions covered by 37 unit tests that run in milliseconds without a browser.
+plain functions covered by unit tests that run in milliseconds without a browser.
 
 ## Adding or editing items
 
@@ -121,13 +122,15 @@ would need on-demand rendering — add `@astrojs/vercel`, a `/og/[code].png` end
 
 ## Testing
 
-- `npm test` — 37 unit tests over the pure logic.
-- `npm run test:e2e` — 26 end-to-end tests across desktop and mobile viewports, run
+- `npm test` — unit tests over the pure logic.
+- `npm run test:e2e` — end-to-end tests across desktop and mobile viewports, run
   against the real production build (image formats and hydration differ from dev).
 
 E2E covers the entry flow, tax toggle, image formats and lazy-loading attributes, cart
 arithmetic, the overspend refusal and recovery, share-link round-trip, junk-code
-fallback, keyboard operation, and sticky-header alignment.
+fallback, keyboard operation, sticky-header alignment, and the how-to-play tour
+(auto-run once, skip persistence, replay from the help button, keyboard control,
+absent on shared links).
 
 In a sandbox without downloadable browsers, set `CHROMIUM_PATH` to an existing Chromium
 binary.
@@ -139,4 +142,5 @@ binary.
   rates run from 0% to about 13%.
 - Fonts load from Google Fonts. Self-host them before this becomes a real site — it's a
   render-blocking third-party request.
-- No analytics, no cookies, no storage. Nothing leaves the browser.
+- No analytics, no cookies, no accounts. A single `localStorage` flag remembers that
+  you've seen the how-to-play tour — nothing leaves your browser.

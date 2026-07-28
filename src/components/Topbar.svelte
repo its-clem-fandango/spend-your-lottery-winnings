@@ -9,8 +9,9 @@
     count: number;
     broke: boolean;
     onopencart: () => void;
+    onhelp: () => void;
   }
-  let { total, spent, remaining, count, broke, onopencart }: Props = $props();
+  let { total, spent, remaining, count, broke, onopencart, onhelp }: Props = $props();
 
   let bar = $state<HTMLElement | null>(null);
   let cartBtn = $state<HTMLButtonElement | null>(null);
@@ -104,7 +105,7 @@
   <div class="inner">
     <div class="brand">Spend Your<br /><span>Lottery Winnings</span></div>
 
-    <dl class="stats">
+    <dl class="stats" data-tour="stats">
       <div class="stat">
         <dt>Winnings</dt>
         <dd class="num">{money(total)}</dd>
@@ -121,7 +122,9 @@
       </div>
     </dl>
 
-    <button class="btn cart" type="button" bind:this={cartBtn} class:bump={bumping} onclick={onopencart} aria-haspopup="dialog">
+    <button class="help" type="button" onclick={onhelp} aria-label="How to play">?</button>
+
+    <button class="btn cart" type="button" bind:this={cartBtn} class:bump={bumping} onclick={onopencart} aria-haspopup="dialog" data-tour="cart">
       Cart
       <span class="count" class:on={count > 0} aria-hidden="true">{count}</span>
       <span class="vh">{count === 1 ? '1 item in cart' : `${count} items in cart`}</span>
@@ -184,6 +187,29 @@
     font-weight: 700;
     font-size: clamp(14px, 3.4vw, 20px);
     letter-spacing: 0;
+  }
+
+  /* Quiet next to the foil cart button, but findable when someone's lost. */
+  .help {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(246, 239, 223, 0.35);
+    background: transparent;
+    color: var(--cream-2);
+    font-family: var(--display);
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: border-color 0.18s ease, transform 0.18s ease;
+  }
+  .help:hover {
+    border-color: var(--gold);
+    transform: translateY(-1px);
   }
 
   .cart {

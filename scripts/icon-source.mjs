@@ -44,16 +44,6 @@ export const ITEMS = [
   )
 },
 {
-  id:'model3', name:'Tesla Model 3', price:42000, category:'Cars & Wheels',
-  blurb:'Silent, smug, always hunting for a plug.',
-  svg: svg(
-    '<path d="M11 66V58c0-3 2-6 5-7l12-4 9-9c2-2 4-3 7-3h16c3 0 5 1 7 3l9 9 12 4c3 1 5 4 5 7v8"/>' +
-    '<path d="M28 47h44"/>' +
-    G('M52 20l-9 15h7l-3 12 11-16h-7z') +
-    wheel(31) + wheel(69) + ground(),
-  )
-},
-{
   id:'lexus-rx', name:'Lexus RX', price:58000, category:'Cars & Wheels',
   blurb:'A Camry that went to business school.',
   svg: svg(
@@ -62,6 +52,17 @@ export const ITEMS = [
     G('M35 44l5-10h20l5 10z') +
     '<path d="M17 56h9M74 56h9"/>' +
     wheel(31) + wheel(69) + ground(),
+  )
+},
+{
+  id:'lexus-lx', name:'Lexus LX 600', price:115000, category:'Cars & Wheels',
+  blurb:'A Land Cruiser with a corner office.',
+  svg: svg(
+    '<path d="M12 66V50c0-3 2-5 5-5h4l6-13c1-3 4-5 7-5h32c3 0 6 2 7 5l6 13h4c3 0 5 2 5 5v16"/>' +
+    '<path d="M27 45h46"/>' +
+    '<path d="M50 32v13"/>' +
+    GR(16,52,16,6,2) +
+    wheel(30) + wheel(70) + ground()
   )
 },
 {
@@ -96,11 +97,16 @@ export const ITEMS = [
   )
 },
 {
-  id:'jet-share', name:'Private jet, 1/16 share', price:650000, category:'Cars & Wheels',
-  blurb:"You still can't bring a full-size shampoo.",
+  id:'jetski', name:'Jet ski', price:18000, category:'Cars & Wheels',
+  blurb:'The lake will hear you before it sees you.',
   svg: svg(
-    '<path d="M50 8c4 0 7 6 7 14v13l32 18v9l-32-9v14l10 8v7l-17-5-17 5v-7l10-8V53l-32 9v-9l32-18V22c0-8 3-14 7-14z"/>' +
-    GC(50,24,4)
+    '<path d="M8 64h64l20-8c2 6-1 12-7 14l-8 3H19c-5 0-9-4-11-9z"/>' +
+    '<path d="M28 64l9-9h20l9 9"/>' +
+    '<path d="M42 55l5-13"/>' +
+    '<path d="M40 40h13"/>' +
+    GR(44,57,15,5,2) +
+    '<path d="M10 84c6-4 11 4 17 0s11 4 17 0 11 4 17 0 11 4 17 0"/>',
+    4.6
   )
 },
 
@@ -136,20 +142,6 @@ export const ITEMS = [
     pine(15,62,22) + pine(88,62,18) +
     '<path d="M10 70c6-3 10 3 16 0s10 3 16 0 10 3 16 0 10 3 16 0 10 3 16 0"/>' +
     '<path d="M10 80c6-3 10 3 16 0s10 3 16 0 10 3 16 0 10 3 16 0 10 3 16 0"/>',
-    4.6
-  )
-},
-{
-  id:'santa-barbara', name:'Beachfront house, Santa Barbara CA', price:4200000, category:'Real Estate',
-  blurb:'Five bedrooms and a permanent salt smell.',
-  svg: svg(
-    sun(80,24,10) +
-    '<path d="M18 46L50 24l32 22"/>' +
-    '<path d="M26 43v23h48V43"/>' +
-    '<path d="M36 52h12v14H36zM58 52h10v9H58z"/>' +
-    '<path d="M22 66h56"/>' +
-    '<path d="M10 76c6-4 11 4 17 0s11 4 17 0 11 4 17 0 11 4 17 0"/>' +
-    '<path d="M10 86c6-4 11 4 17 0s11 4 17 0 11 4 17 0 11 4 17 0"/>',
     4.6
   )
 },
@@ -196,6 +188,49 @@ export const ITEMS = [
 
 /* ============== TRAVEL & EXPERIENCES ============== */
 {
+  id:'fashion-week', name:'Paris Fashion Week, front row', price:30000, category:'Travel & Experiences',
+  blurb:"You'll be photographed. No one will know who you are.",
+  svg: svg(
+    '<path d="M50 14c-5 0-8 3-8 7s3 6 8 8v7"/>' +
+    '<path d="M50 36L17 61c-2 3 0 7 4 7h58c4 0 6-4 4-7z"/>' +
+    GC(50,36,4)
+  )
+},
+{
+  id:'spa-week', name:'Destination spa week', price:30000, category:'Travel & Experiences',
+  blurb:'Robes, eucalyptus, zero notifications.',
+  svg: svg(
+    sun(74,24,8) +
+    '<path d="M50 34c7 9 7 20 0 27-7-7-7-18 0-27z"/>' +
+    '<path d="M30 44c9 2 16 9 18 17-9-2-16-9-18-17z"/>' +
+    '<path d="M70 44c-9 2-16 9-18 17 9-2 16-9 18-17z"/>' +
+    '<path d="M10 78c6-4 11 4 17 0s11 4 17 0 11 4 17 0 11 4 17 0"/>',
+    4.6
+  )
+},
+{
+  id:'monaco-gp', name:'Monaco Grand Prix, yacht deck', price:40000, category:'Travel & Experiences',
+  blurb:'Watch millionaires lap other millionaires.',
+  svg: svg(
+    '<path d="M30 16v62"/>' +
+    '<path d="M30 20h44v28H30"/>' +
+    GR(37,20,9,9,1) + GR(55,20,9,9,1) +
+    GR(46,29,9,9,1) + GR(64,29,9,9,1) +
+    GR(37,38,9,9,1) + GR(55,38,9,9,1) +
+    ground()
+  )
+},
+{
+  id:'wimbledon', name:'Wimbledon final, Centre Court', price:45000, category:'Travel & Experiences',
+  blurb:'Strawberries, cream, and very polite screaming.',
+  svg: svg(
+    '<ellipse cx="46" cy="32" rx="17" ry="21"/>' +
+    '<path d="M46 12v41M30 26h32M30 39h32"/>' +
+    '<path d="M46 53v27"/>' +
+    GC(72,68,7)
+  )
+},
+{
   id:'safari', name:'Two-week safari, Botswana', price:68000, category:'Travel & Experiences',
   blurb:'The elephants do not care that you are rich.',
   svg: svg(
@@ -207,6 +242,16 @@ export const ITEMS = [
     '<circle cx="34" cy="46" r="2" fill="currentColor" stroke="none"/>' +
     ground(80),
     4.6
+  )
+},
+{
+  id:'met-gala', name:'Met Gala ticket', price:75000, category:'Travel & Experiences',
+  blurb:'Admission is one price. Understanding the theme costs extra.',
+  svg: svg(
+    '<path d="M26 44v32M74 44v32"/>' +
+    '<path d="M26 48c9 15 39 15 48 0"/>' +
+    '<path d="M16 78h20M64 78h20"/>' +
+    GC(26,40,5) + GC(74,40,5)
   )
 },
 {
@@ -287,6 +332,28 @@ export const ITEMS = [
   )
 },
 {
+  id:'tennis-bracelet', name:'Diamond tennis bracelet', price:25000, category:'Everyday Splurges',
+  blurb:'Named after tennis. Worn nowhere near it.',
+  svg: svg(
+    '<circle cx="50" cy="52" r="24"/>' +
+    '<circle cx="30" cy="40" r="3" fill="currentColor" stroke="none"/>' +
+    '<circle cx="40" cy="31" r="3" fill="currentColor" stroke="none"/>' +
+    '<circle cx="60" cy="31" r="3" fill="currentColor" stroke="none"/>' +
+    '<circle cx="70" cy="40" r="3" fill="currentColor" stroke="none"/>' +
+    GC(50,28,5)
+  )
+},
+{
+  id:'birkin', name:'Hermès Birkin, crocodile', price:55000, category:'Everyday Splurges',
+  blurb:"You don't buy one. You're chosen.",
+  svg: svg(
+    '<path d="M34 40c0-10 7-16 16-16s16 6 16 16"/>' +
+    '<path d="M18 40h64l5 36H13z"/>' +
+    '<path d="M26 40l3 36M74 40l-3 36"/>' +
+    GR(44,50,12,7,2)
+  )
+},
+{
   id:'rolex', name:'Rolex Daytona', price:38000, category:'Everyday Splurges',
   blurb:'Tells time. Mostly tells other things.',
   svg: svg(
@@ -321,6 +388,16 @@ export const ITEMS = [
   )
 },
 {
+  id:'starbucks', name:'Starbucks, daily, for life', price:100000, category:'Everyday Splurges',
+  blurb:'Your name spelled wrong every day, forever.',
+  svg: svg(
+    '<path d="M44 16c0 4 3 4 3 8M56 16c0 4 3 4 3 8"/>' +
+    '<path d="M33 30h34l-2 8H35z"/>' +
+    '<path d="M35 38l5 40h20l5-40"/>' +
+    GR(38,52,24,9,2)
+  )
+},
+{
   id:'chefs-kitchen', name:"Chef's kitchen renovation", price:145000, category:'Everyday Splurges',
   blurb:'The takeout apps remain undeleted.',
   svg: svg(
@@ -331,19 +408,6 @@ export const ITEMS = [
     '<rect x="34" y="64" width="32" height="14" rx="2"/>' +
     '<path d="M30 40V24c0-3 2-5 5-5h30c3 0 5 2 5 5v16"/>' +
     '<path d="M18 84h64"/>',
-    4.6
-  )
-},
-{
-  id:'pool-cabana', name:'Backyard pool and cabana', price:180000, category:'Everyday Splurges',
-  blurb:'A hole in the ground you fill with money.',
-  svg: svg(
-    sun(80,22,9) +
-    '<path d="M14 50h58a6 6 0 0 1 6 6v26H14z"/>' +
-    '<path d="M20 62c6-4 11 4 17 0s11 4 17 0 11 4 17 0"/>' +
-    '<path d="M20 74c6-4 11 4 17 0s11 4 17 0 11 4 17 0"/>' +
-    '<path d="M62 50V38h12"/>' +
-    '<path d="M62 44h12"/>',
     4.6
   )
 },

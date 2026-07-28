@@ -11,17 +11,6 @@
     "priceVerified": "2026-07-27"
   },
   {
-    "id": "model3",
-    "code": "01",
-    "name": "Tesla Model 3",
-    "price": 42000,
-    "category": "cars",
-    "blurb": "Silent, smug, always hunting for a plug.",
-    "image": "model3.png",
-    "imageCredit": null,
-    "priceVerified": "2026-07-27"
-  },
-  {
     "id": "lexus-rx",
     "code": "02",
     "name": "Lexus RX",
@@ -30,6 +19,22 @@
     "blurb": "A Camry that went to business school.",
     "image": "lexus-rx.png",
     "imageCredit": null,
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "lexus-lx",
+    "code": "0y",
+    "name": "Lexus LX 600",
+    "price": 115000,
+    "category": "cars",
+    "blurb": "A Land Cruiser with a corner office.",
+    "image": "lexus-lx.jpg",
+    "imageCredit": {
+      "author": "Ethan Llamas",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Lexus_LX_600_VJA310_F_Sport_White_Nova_01.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -66,14 +71,19 @@
     "priceVerified": "2026-07-27"
   },
   {
-    "id": "jet-share",
-    "code": "06",
-    "name": "Private jet, 1/16 share",
-    "price": 650000,
+    "id": "jetski",
+    "code": "0z",
+    "name": "Jet ski",
+    "price": 18000,
     "category": "cars",
-    "blurb": "You still can't bring a full-size shampoo.",
-    "image": "jet-share.png",
-    "imageCredit": null,
+    "blurb": "The lake will hear you before it sees you.",
+    "image": "jetski.jpg",
+    "imageCredit": {
+      "author": "PattayaPatrol",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:DFC_0467_Rider_in_a_neon_green_helmet_and_life_vest_speeds_across_the_water_on_a_yellow-and-black_jet_ski_marked_with_the_number_58.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -154,6 +164,70 @@
     "priceVerified": "2026-07-27"
   },
   {
+    "id": "fashion-week",
+    "code": "12",
+    "name": "Paris Fashion Week, front row",
+    "price": 30000,
+    "category": "travel",
+    "blurb": "You'll be photographed. No one will know who you are.",
+    "image": "fashion-week.jpg",
+    "imageCredit": {
+      "author": "Angi Lana",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:D%C3%A9fil%C3%A9_BL1.D.jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "spa-week",
+    "code": "19",
+    "name": "Destination spa week",
+    "price": 30000,
+    "category": "travel",
+    "blurb": "Robes, eucalyptus, zero notifications.",
+    "image": "spa-week.jpg",
+    "imageCredit": {
+      "author": "David Shankbone",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 3.0",
+      "url": "https://commons.wikimedia.org/wiki/File:088_Irotama_Infinity_Pool_Sunset.JPG"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "monaco-gp",
+    "code": "13",
+    "name": "Monaco Grand Prix, yacht deck",
+    "price": 40000,
+    "category": "travel",
+    "blurb": "Watch millionaires lap other millionaires.",
+    "image": "monaco-gp.jpg",
+    "imageCredit": {
+      "author": "35mmMan",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Yachts_and_spectators_in_the_harbour_(27912204156).jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "wimbledon",
+    "code": "14",
+    "name": "Wimbledon final, Centre Court",
+    "price": 45000,
+    "category": "travel",
+    "blurb": "Strawberries, cream, and very polite screaming.",
+    "image": "wimbledon.jpg",
+    "imageCredit": {
+      "author": "Peter Menzel",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Wimbledon_Centre_Court_(52205402762).jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
     "id": "safari",
     "code": "0e",
     "name": "Two-week safari, Botswana",
@@ -162,6 +236,22 @@
     "blurb": "The elephants do not care that you are rich.",
     "image": "safari.png",
     "imageCredit": null,
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "met-gala",
+    "code": "15",
+    "name": "Met Gala ticket",
+    "price": 75000,
+    "category": "travel",
+    "blurb": "Admission is one price. Understanding the theme costs extra.",
+    "image": "met-gala.jpg",
+    "imageCredit": {
+      "author": "Arad",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 3.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Metropolitan_Museum_of_Art_entrance_NYC.JPG"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -231,6 +321,22 @@
     "priceVerified": "2026-07-27"
   },
   {
+    "id": "tennis-bracelet",
+    "code": "17",
+    "name": "Diamond tennis bracelet",
+    "price": 25000,
+    "category": "splurges",
+    "blurb": "Named after tennis. Worn nowhere near it.",
+    "image": "tennis-bracelet.jpg",
+    "imageCredit": {
+      "author": "RebeccaBarray",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Closeup_tennis_bracelet.jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
     "id": "rolex",
     "code": "0l",
     "name": "Rolex Daytona",
@@ -239,6 +345,22 @@
     "blurb": "Tells time. Mostly tells other things.",
     "image": "rolex.png",
     "imageCredit": null,
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "birkin",
+    "code": "18",
+    "name": "Hermès Birkin, crocodile",
+    "price": 55000,
+    "category": "splurges",
+    "blurb": "You don't buy one. You're chosen.",
+    "image": "birkin.jpg",
+    "imageCredit": {
+      "author": "Ohconfucius",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 3.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Croc_Birkin_bag.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -264,6 +386,22 @@
     "priceVerified": "2026-07-27"
   },
   {
+    "id": "starbucks",
+    "code": "16",
+    "name": "Starbucks, daily, for life",
+    "price": 100000,
+    "category": "splurges",
+    "blurb": "Your name spelled wrong every day, forever.",
+    "image": "starbucks.jpg",
+    "imageCredit": {
+      "author": "ajay_suresh",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Starbucks_-_Coffee_Frappuccino_(51259869202).jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
     "id": "chefs-kitchen",
     "code": "0o",
     "name": "Chef's kitchen renovation",
@@ -271,17 +409,6 @@
     "category": "splurges",
     "blurb": "The takeout apps remain undeleted.",
     "image": "chefs-kitchen.png",
-    "imageCredit": null,
-    "priceVerified": "2026-07-27"
-  },
-  {
-    "id": "pool-cabana",
-    "code": "0p",
-    "name": "Backyard pool and cabana",
-    "price": 180000,
-    "category": "splurges",
-    "blurb": "A hole in the ground you fill with money.",
-    "image": "pool-cabana.png",
     "imageCredit": null,
     "priceVerified": "2026-07-27"
   },

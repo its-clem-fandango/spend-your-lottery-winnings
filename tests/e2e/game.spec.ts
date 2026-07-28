@@ -8,6 +8,8 @@ const items = itemsJson as Item[];
 const isMobile = (p: Page) => p.viewportSize()!.width < 700;
 
 async function startGame(page: Page, amount = '12400000') {
+  // Pretend the how-to-play tour was already seen — it has its own spec.
+  await page.addInitScript(() => localStorage.setItem('lottery.tourSeen', '1'));
   await page.goto('/');
   const field = page.locator('#amount');
   await field.fill('');
@@ -42,6 +44,7 @@ test.describe('entry', () => {
   });
 
   test('after-tax mode reduces the spendable total', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('lottery.tourSeen', '1'));
     await page.goto('/');
     await page.getByRole('button', { name: /\$2M/ }).click();
     await page.locator('#tax-toggle').check();
@@ -62,7 +65,7 @@ test.describe('entry', () => {
 test.describe('board', () => {
   test('renders every item with a real optimised image', async ({ page }) => {
     await startGame(page);
-    await expect(page.locator('.card')).toHaveCount(34);
+    await expect(page.locator('.card')).toHaveCount(41);
     await expect(page.locator('[role="tab"]')).toHaveCount(6);
 
     // AVIF first, WebP fallback, responsive candidates on both.
