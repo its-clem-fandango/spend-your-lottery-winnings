@@ -84,6 +84,12 @@ image is ever replaced with a non-CC one, clear the credit. (`scripts/build-item
 still exists to generate placeholder plates for new items that don't have a photo yet;
 it never overwrites existing files.)
 
+Those credits are rendered — a collapsed **Photography credits** list at the end of the
+board names every photographer and links their file page. Storing attribution in a JSON
+file nobody reads does not satisfy CC BY, so an item with a photo needs a real credit or
+it will simply be missing from that list. `npm test` enforces the pairing: every item
+without a credit must still be on a generated `.png` plate.
+
 **To swap in a new photo:** drop `<id>.jpg` into `src/assets/items/`, delete the old
 file, point the item's `image` at the new filename, update `imageCredit`, then:
 

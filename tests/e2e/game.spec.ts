@@ -102,8 +102,10 @@ test.describe('entry', () => {
 test.describe('board', () => {
   test('renders every item with a real optimised image', async ({ page }) => {
     await startGame(page);
-    await expect(page.locator('.card')).toHaveCount(42);
-    await expect(page.locator('[role="tab"]')).toHaveCount(6);
+    await expect(page.locator('.card')).toHaveCount(items.length);
+    await expect(page.locator('.tab')).toHaveCount(
+      new Set(items.map((i) => i.category)).size
+    );
 
     // AVIF first, WebP fallback, responsive candidates on both.
     const avif = page.locator('.card source[type="image/avif"]').first();
@@ -211,7 +213,8 @@ test.describe('overspending', () => {
   });
 
   test('offers the summary once nothing is affordable', async ({ page }) => {
-    await startGame(page, '30000');
+    // Has to leave less than the cheapest thing on the board, which is $10.50.
+    await startGame(page, '28005');
     await page.locator('.card[data-id="camry"] .hit').click();
     await expect(page.locator('.nudge')).toHaveClass(/on/);
   });
@@ -283,7 +286,8 @@ test.describe('summary and sharing', () => {
     await page.locator('.card[data-id="camry"] .hit').click();
     await page.getByRole('button', { name: /^Cart/ }).click();
     await page.getByRole('button', { name: /done spending/i }).click();
-    await page.getByRole('button', { name: /start over/i }).click();
+    // Scoped: the winnings dialog also offers a "start over from scratch".
+    await page.locator('.actions').getByRole('button', { name: /start over/i }).click();
     await expect(page.locator('#amount')).toBeVisible();
   });
 });

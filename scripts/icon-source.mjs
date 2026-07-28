@@ -501,6 +501,63 @@ export const ITEMS = [
     '<path d="M50 70l3.5 7 7.5 1-5.5 5 1.5 8-6.5-4-6.5 4 1.5-8-5.5-5 7.5-1z" fill="var(--green-800)" stroke="none"/>',
     4.6
   )
+},
+
+/* ============== EVERYDAY SPLURGES (cont.) ============== */
+{
+  id:'phillips-bbq', name:'Phillips BBQ rib tip dinner', price:25, category:'Everyday Splurges',
+  blurb:'Rib tips, hot link, white bread. Still the correct answer.',
+  svg: svg(
+    // Foam tray, three rib tips, sauce.
+    '<path d="M14 52h72l-6 32a6 6 0 0 1-6 5H26a6 6 0 0 1-6-5z"/>' +
+    '<path d="M10 52h80"/>' +
+    G('M30 60h14v12H30zM48 60h14v12H48zM39 76h16v10H39z') +
+    '<path d="M26 26c0-6 5-10 11-10s11 4 11 10"/>' +
+    '<path d="M48 26c0-8 6-14 14-14s14 6 14 14"/>' +
+    '<path d="M22 40h58"/>',
+    4.6
+  )
+},
+{
+  id:'baja-burrito', name:'Baja Catch & Grill veggie burrito', price:10.5, category:'Everyday Splurges',
+  blurb:'The cheapest thing on this entire board, and not the worst one.',
+  svg: svg(
+    // Foil-wrapped burrito, one end open.
+    '<path d="M24 78L70 22a13 13 0 0 1 20 17L44 92a13 13 0 0 1-20-14z"/>' +
+    G('M26 80l14 10-11 4a7 7 0 0 1-9-9z') +
+    '<path d="M44 60l10 8M56 46l10 8"/>' +
+    '<path d="M70 22l6 8"/>',
+    4.6
+  )
+},
+
+/* ============== SPORTS & FANDOM ============== */
+{
+  id:'raiders-season', name:'Raiders season tickets, two seats', price:6100, category:'Sports & Fandom',
+  blurb:'Every home game, someone beside you. Bring a coat for the fourth quarter.',
+  svg: svg(
+    // Two stubs, torn edge, one gold.
+    '<path d="M12 34h40v14a6 6 0 0 0 0 12v14H12V60a6 6 0 0 0 0-12z"/>' +
+    G('M52 30h36v16a6 6 0 0 0 0 12v16H52V58a6 6 0 0 1 0-12z') +
+    '<path d="M22 44v20M32 44v20"/>' +
+    '<path d="M64 40v8M64 56v8" stroke="var(--green-800)"/>',
+    4.6
+  )
+},
+{
+  id:'raiders-suite', name:'Raiders suite, one home game', price:35000, category:'Sports & Fandom',
+  blurb:'Catered, climate controlled, and still a Raiders game.',
+  svg: svg(
+    // Looking out of the box: the field through the opening, seats in front.
+    '<rect x="10" y="12" width="80" height="42" rx="5"/>' +
+    G('M18 36h64v12H18z') +
+    '<path d="M50 36v12" stroke="var(--green-800)"/>' +
+    '<path d="M17 88V73a7 7 0 0 1 7-7h5a7 7 0 0 1 7 7v15"/>' +
+    '<path d="M39 88V73a7 7 0 0 1 7-7h5a7 7 0 0 1 7 7v15"/>' +
+    '<path d="M61 88V73a7 7 0 0 1 7-7h5a7 7 0 0 1 7 7v15"/>' +
+    ground(90),
+    4.6
+  )
 }
 ];
 
@@ -508,6 +565,7 @@ export const CATEGORIES = [
   { name:'Cars & Wheels',        note:'Depreciating, beloved.' },
   { name:'Real Estate',          note:'Where the real money goes to die.' },
   { name:'Travel & Experiences', note:'You will post about all of it.' },
+  { name:'Sports & Fandom',      note:'Loyalty is expensive.' },
   { name:'Everyday Splurges',    note:'Small on this list. Insane in real life.' },
   { name:'Grown-Up Moves',       note:'The boring ones that actually work.' },
   { name:'Giving Back',          note:'Look at you.' }

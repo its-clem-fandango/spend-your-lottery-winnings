@@ -1,7 +1,11 @@
 import { clamp, niceRound } from './money';
 
-export const MIN_AMOUNT = 1_000;
-export const MAX_AMOUNT = 1_000_000_000;
+/* The entry screen asks for a typed number now, so nothing renders this — it's
+   kept against the day a rail comes back. Its top is its own: the field's
+   ceiling is a safety bound in the trillions, which would make every realistic
+   jackpot unreachable on a thousand-step track. */
+export const SLIDER_MIN = 1_000;
+export const SLIDER_MAX = 1_000_000_000;
 export const SLIDER_STEPS = 1000;
 
 /**
@@ -11,14 +15,14 @@ export const SLIDER_STEPS = 1000;
  */
 export function sliderToAmount(pos: number): number {
   const t = clamp(pos, 0, SLIDER_STEPS) / SLIDER_STEPS;
-  const lo = Math.log10(MIN_AMOUNT);
-  const hi = Math.log10(MAX_AMOUNT);
+  const lo = Math.log10(SLIDER_MIN);
+  const hi = Math.log10(SLIDER_MAX);
   return niceRound(Math.pow(10, lo + t * (hi - lo)));
 }
 
 export function amountToSlider(amount: number): number {
-  const a = clamp(amount, MIN_AMOUNT, MAX_AMOUNT);
-  const lo = Math.log10(MIN_AMOUNT);
-  const hi = Math.log10(MAX_AMOUNT);
+  const a = clamp(amount, SLIDER_MIN, SLIDER_MAX);
+  const lo = Math.log10(SLIDER_MIN);
+  const hi = Math.log10(SLIDER_MAX);
   return Math.round(((Math.log10(a) - lo) / (hi - lo)) * SLIDER_STEPS);
 }

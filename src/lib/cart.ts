@@ -74,19 +74,60 @@ export function clearCart(state: GameState): GameState {
   return { ...state, cart: {}, order: [] };
 }
 
+/**
+ * Trims a cart to what `budget` affords, earliest purchases first.
+ *
+ * Not used to enforce the game's own rules — going into the red is a legitimate
+ * state you reach by lowering your winnings. This is the bound on carts that
+ * arrive from outside the app (a share URL, localStorage someone edited), where
+ * the budget is the widest a real run could ever have been rather than the
+ * player's current total.
+ */
+export function clampCart(
+  cart: Cart,
+  order: string[],
+  index: ItemIndex,
+  budget: number
+): { cart: Cart; order: string[] } {
+  const kept: Cart = {};
+  const keptOrder: string[] = [];
+  let left = budget;
+  for (const id of order) {
+    const item = index[id];
+    const want = cart[id];
+    if (!item || !want) continue;
+    const qty = Math.min(want, Math.floor(left / item.price));
+    if (qty < 1) continue;
+    kept[id] = qty;
+    left -= qty * item.price;
+    keptOrder.push(id);
+  }
+  return { cart: kept, order: keptOrder };
+}
+
 /** Cheapest item still on the board — used to detect "nothing left you can buy". */
 export function minPrice(items: readonly Item[]): number {
   return items.reduce((m, i) => Math.min(m, i.price), Infinity);
 }
 
+/**
+ * "Stuck" means money is left and none of it is enough — which is what the
+ * nudge copy says. Being in the red is a different state with its own banner,
+ * so a negative balance is deliberately not stuck.
+ */
 export function isStuck(state: GameState, index: ItemIndex, items: readonly Item[]): boolean {
-  return itemCount(state.cart) > 0 && remaining(state, index) < minPrice(items);
+  const left = remaining(state, index);
+  return itemCount(state.cart) > 0 && left >= 0 && left < minPrice(items);
 }
 
 /** Purchases ranked by total spend, for the summary card. */
 export function ranked(state: GameState, index: ItemIndex) {
-  return state.order
-    .map((id) => ({ item: index[id]!, qty: state.cart[id]!, subtotal: index[id]!.price * state.cart[id]! }))
-    .filter((r) => r.item)
-    .sort((a, b) => b.subtotal - a.subtotal);
+  const rows: Array<{ item: Item; qty: number; subtotal: number }> = [];
+  for (const id of state.order) {
+    const item = index[id];
+    const qty = state.cart[id];
+    if (!item || !qty) continue;
+    rows.push({ item, qty, subtotal: item.price * qty });
+  }
+  return rows.sort((a, b) => b.subtotal - a.subtotal);
 }

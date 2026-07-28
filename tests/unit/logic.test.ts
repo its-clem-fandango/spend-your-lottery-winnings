@@ -1,17 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import itemsJson from '../../src/data/items.json';
+import categoriesJson from '../../src/data/categories.json';
 import type { Item, GameState } from '../../src/lib/types';
 import { money, shortMoney, niceRound, clamp } from '../../src/lib/money';
-import { federalTax, afterTax, effectiveRate, STATE_RATE } from '../../src/lib/tax';
-import { sliderToAmount, amountToSlider, MIN_AMOUNT, MAX_AMOUNT } from '../../src/lib/slider';
+import { federalTax, afterTax, effectiveRate, spendable, STATE_RATE } from '../../src/lib/tax';
+import { sliderToAmount, amountToSlider, SLIDER_MIN, SLIDER_MAX } from '../../src/lib/slider';
 import {
   indexItems, spent, remaining, itemCount, addItem, removeItem,
-  canAfford, isStuck, ranked, minPrice
+  canAfford, isStuck, ranked, minPrice, clearCart, clampCart
 } from '../../src/lib/cart';
 import { encodeRun, decodeRun, MAX_QTY } from '../../src/lib/share-code';
 import { verdict } from '../../src/lib/verdict';
+import { parseAmount, formatAmount, hasJunk, MAX_AMOUNT } from '../../src/lib/amount';
 
 const items = itemsJson as Item[];
+const categories = categoriesJson as Array<{ slug: string }>;
 const index = indexItems(items);
 const fresh = (total: number): GameState => ({ gross: total, taxed: false, total, cart: {}, order: [] });
 
@@ -19,6 +22,22 @@ describe('money', () => {
   it('formats with separators', () => {
     expect(money(12400000)).toBe('$12,400,000');
     expect(money(0)).toBe('$0');
+  });
+  /* Reachable by lowering your winnings below what you already spent. */
+  it('puts the sign outside the dollar sign', () => {
+    expect(money(-1_140_000)).toBe('-$1,140,000');
+    expect(shortMoney(-1_140_000)).toBe('-$1.14M');
+  });
+  it('never renders a negative zero', () => {
+    expect(money(-0.004)).toBe('$0');
+  });
+  /* One item on the board is $10.50; rounding it to $11 makes the cart
+     disagree with the receipt. Whole amounts stay clean. */
+  it('shows cents only when there are cents', () => {
+    expect(money(10.5)).toBe('$10.50');
+    expect(money(31.5)).toBe('$31.50');
+    expect(money(28_000)).toBe('$28,000');
+    expect(money(-10.5)).toBe('-$10.50');
   });
   it('abbreviates', () => {
     expect(shortMoney(1_000_000)).toBe('$1M');
@@ -57,8 +76,8 @@ describe('tax', () => {
 
 describe('slider', () => {
   it('spans $1K to $1B', () => {
-    expect(sliderToAmount(0)).toBe(MIN_AMOUNT);
-    expect(sliderToAmount(1000)).toBe(MAX_AMOUNT);
+    expect(sliderToAmount(0)).toBe(SLIDER_MIN);
+    expect(sliderToAmount(1000)).toBe(SLIDER_MAX);
   });
   it('puts the midpoint at $1M, not $500M', () => {
     expect(sliderToAmount(500)).toBe(1_000_000);
@@ -140,7 +159,8 @@ describe('cart', () => {
 
   it('detects being stuck with money too small to spend', () => {
     const cheapest = minPrice(items);
-    let s = fresh(cheapest + 100);
+    // Leave less than the cheapest item, whatever that currently costs.
+    let s = fresh(cheapest * 1.5);
     s = addItem(s, index, items.find((i) => i.price === cheapest)!.id).state;
     expect(isStuck(s, index, items)).toBe(true);
   });
@@ -149,8 +169,44 @@ describe('cart', () => {
     expect(isStuck(fresh(10), index, items)).toBe(false);
   });
 
+  /* Being in the red is its own state with its own banner. "Nothing left you
+     can afford" is about leftover money, and there isn't any. */
+  it('is not stuck when the balance has gone negative', () => {
+    let s = fresh(1e6);
+    s = addItem(s, index, 'camry').state;
+    s = { ...s, total: 1_000 }; // winnings lowered under what's already spent
+    expect(remaining(s, index)).toBeLessThan(0);
+    expect(isStuck(s, index, items)).toBe(false);
+  });
+
   it('canAfford is false for unknown ids', () => {
     expect(canAfford(fresh(1e9), index, 'nope')).toBe(false);
+  });
+
+  it('empties the cart and the order together', () => {
+    let s = fresh(1e6);
+    s = addItem(s, index, 'camry').state;
+    const cleared = clearCart(s);
+    expect(cleared.cart).toEqual({});
+    expect(cleared.order).toEqual([]);
+    expect(cleared.total).toBe(s.total); // the jackpot survives
+  });
+
+  describe('clampCart', () => {
+    it('trims to the budget, earliest first', () => {
+      const out = clampCart({ camry: 5 }, ['camry'], index, 60_000);
+      expect(out.cart['camry']).toBe(2); // floor(60000 / 28000)
+      expect(out.order).toEqual(['camry']);
+    });
+    it('drops what the budget cannot reach at all', () => {
+      const out = clampCart({ camry: 1 }, ['camry'], index, 1_000);
+      expect(out.cart).toEqual({});
+      expect(out.order).toEqual([]);
+    });
+    it('ignores ids that are not on the board', () => {
+      const out = clampCart({ ghost: 3 }, ['ghost'], index, 1e9);
+      expect(out.cart).toEqual({});
+    });
   });
 });
 
@@ -160,9 +216,10 @@ describe('share codes', () => {
     s = addItem(s, index, 'camry').state;
     s = addItem(s, index, 'camry').state;
     s = addItem(s, index, 'rolex').state;
-    const code = encodeRun(s.total, false, s.cart, s.order, items);
+    const code = encodeRun(s.gross, false, s.cart, s.order, items);
     const back = decodeRun(code, items)!;
-    expect(back.amount).toBe(12_400_000);
+    expect(back.gross).toBe(12_400_000);
+    expect(back.total).toBe(12_400_000);
     expect(back.taxed).toBe(false);
     expect(back.cart).toEqual({ camry: 2, rolex: 1 });
     expect(back.order).toEqual(['camry', 'rolex']);
@@ -173,11 +230,23 @@ describe('share codes', () => {
     expect(decodeRun(code, items)!.taxed).toBe(true);
   });
 
+  /* The code carries the pre-tax jackpot and re-derives what's spendable. If it
+     stored the net figure instead, reopening a taxed run would treat an
+     already-taxed number as gross and tax it a second time. */
+  it('carries the pre-tax jackpot and re-derives the spendable total', () => {
+    const back = decodeRun(encodeRun(1e6, true, {}, [], items), items)!;
+    expect(back.gross).toBe(1e6);
+    expect(back.total).toBe(spendable(1e6, true));
+    expect(back.total).toBeLessThan(back.gross);
+  });
+
+  /* Three characters per item plus the header, so this tracks the board size —
+     bump it when items are added, and worry if it grows faster than that. */
   it('stays short', () => {
-    let s = fresh(1e9);
+    let s = fresh(1e10);
     for (const item of items) s = addItem(s, index, item.id).state;
-    const code = encodeRun(s.total, false, s.cart, s.order, items);
-    expect(code.length).toBeLessThan(150);
+    const code = encodeRun(s.gross, false, s.cart, s.order, items);
+    expect(code.length).toBeLessThan(items.length * 3 + 30);
   });
 
   it('drops retired items instead of throwing', () => {
@@ -195,9 +264,44 @@ describe('share codes', () => {
     expect(decodeRun('v1.zzz', items)).toBeNull();
   });
 
-  it('clamps absurd quantities', () => {
-    const code = encodeRun(1e9, false, { camry: 9999 }, ['camry'], items);
-    expect(decodeRun(code, items)!.cart['camry']).toBeLessThanOrEqual(MAX_QTY);
+  it('round-trips quantities above one pair without losing purchases', () => {
+    // 40 Camrys is $1.12M — perfectly affordable, and 40 > MAX_QTY.
+    expect(40).toBeGreaterThan(MAX_QTY);
+    const code = encodeRun(5_000_000, false, { camry: 40 }, ['camry'], items);
+    const back = decodeRun(code, items)!;
+    expect(back.cart['camry']).toBe(40);
+    expect(back.order).toEqual(['camry']);
+  });
+
+  /* A cart worth more than the jackpot is a real state, not tampering — you get
+     there by lowering your winnings mid-run — so the link has to carry it. */
+  it('keeps an overspent cart so the debt survives the link', () => {
+    const code = encodeRun(60_000, false, { camry: 5 }, ['camry'], items);
+    const back = decodeRun(code, items)!;
+    expect(back.cart['camry']).toBe(5);
+    expect(spent(back.cart, index)).toBeGreaterThan(back.total);
+  });
+
+  it('keeps a purchase the amount can no longer afford', () => {
+    const code = encodeRun(1_000, false, { camry: 1 }, ['camry'], items);
+    const back = decodeRun(code, items)!;
+    expect(back.cart).toEqual({ camry: 1 });
+    expect(back.order).toEqual(['camry']);
+  });
+
+  it('clamps absurd amounts to the entry maximum', () => {
+    const back = decodeRun('v1.zzzzzzzzzz.0.', items)!;
+    expect(back.gross).toBe(MAX_AMOUNT);
+  });
+
+  /* Dropping the affordability trim removes one bound on a crafted URL, so the
+     replacement bound is the widest any real run could have been. */
+  it('bounds a hostile cart to the widest run the game allows', () => {
+    const cheapest = [...items].sort((a, b) => a.price - b.price)[0]!;
+    const pairs = (cheapest.code + 'z').repeat(6_000);
+    const back = decodeRun(`v1.${(1).toString(36)}.0.${pairs}`, items)!;
+    expect(spent(back.cart, index)).toBeLessThanOrEqual(MAX_AMOUNT);
+    expect(Object.keys(back.cart).length).toBeLessThanOrEqual(items.length);
   });
 });
 
@@ -210,10 +314,34 @@ describe('verdict', () => {
   it('survives a zero jackpot', () => {
     expect(verdict(0, 0)).toBeTruthy();
   });
+  /* A deficit is also <= 0, and congratulating someone for it reads as a bug. */
+  it('does not call a deficit magnificent', () => {
+    expect(verdict(-1e6, 1e7)).not.toMatch(/Magnificent/);
+    expect(verdict(-1e6, 1e7)).toMatch(/did not have/);
+  });
+});
+
+describe('amount field', () => {
+  it('sanitises whatever gets pasted in', () => {
+    expect(parseAmount('$1,200,000 approx')).toBe(1_200_000);
+    expect(parseAmount('')).toBe(0);
+    expect(parseAmount('nonsense')).toBe(0);
+  });
+  it('clamps to the entry maximum', () => {
+    expect(parseAmount('99999999999999999')).toBe(MAX_AMOUNT);
+  });
+  it('shows nothing rather than a zero', () => {
+    expect(formatAmount(0)).toBe('');
+    expect(formatAmount(1_200_000)).toBe('1,200,000');
+  });
+  it('flags input that had to be cleaned up', () => {
+    expect(hasJunk('1,200')).toBe(false);
+    expect(hasJunk('$1200')).toBe(true);
+  });
 });
 
 describe('data integrity', () => {
-  it('has 42 items', () => expect(items).toHaveLength(42));
+  it('has 46 items', () => expect(items).toHaveLength(46));
 
   it('has unique ids and share codes', () => {
     expect(new Set(items.map((i) => i.id)).size).toBe(items.length);
@@ -230,6 +358,54 @@ describe('data integrity', () => {
     }
     const homes = items.filter((i) => /tahoe-cabin|aspen-chalet|manhattan-beach/.test(i.id));
     expect(homes).toHaveLength(3);
+  });
+
+  /* Prices are whole dollars everywhere except the burrito, which is the joke.
+     Anything else with a fraction is likelier a typo than a decision. */
+  it('prices in whole dollars, apart from the deliberate exception', () => {
+    const fractional = items.filter((i) => !Number.isInteger(i.price)).map((i) => i.id);
+    expect(fractional).toEqual(['baja-burrito']);
+  });
+
+  it('keeps the cheap end genuinely cheap', () => {
+    const price = (id: string) => items.find((i) => i.id === id)!.price;
+    expect(price('baja-burrito')).toBe(10.5);
+    expect(price('phillips-bbq')).toBe(25);
+    expect(minPrice(items)).toBe(10.5);
+  });
+
+  /* CC BY and CC BY-SA oblige us to name the photographer, so a credited item
+     needs every field the footer renders. */
+  it('has complete attribution wherever a credit exists', () => {
+    for (const item of items) {
+      if (!item.imageCredit) continue;
+      const c = item.imageCredit;
+      expect(c.author.length).toBeGreaterThan(0);
+      expect(c.license.length).toBeGreaterThan(0);
+      expect(c.url).toMatch(/^https:\/\//);
+      expect(c.source.length).toBeGreaterThan(0);
+    }
+  });
+
+  /* Photos whose photographer we don't know. Listed rather than left to slip
+     through, so an uncredited image is always a deliberate entry here and never
+     an oversight — and so anyone auditing the licensing knows exactly which
+     files have no provenance. A guessed credit would be worse than none: it
+     misattributes a real named person. */
+  const UNKNOWN_PROVENANCE = ['raiders-suite'];
+
+  it('credits every photograph except the generated plates and the known-unknowns', () => {
+    const plates = items.filter((i) => i.image.endsWith('.png')).map((i) => i.id);
+    const uncredited = items.filter((i) => !i.imageCredit).map((i) => i.id);
+    expect([...uncredited].sort()).toEqual([...plates, ...UNKNOWN_PROVENANCE].sort());
+  });
+
+  /* Every category listed has to have something in it, or the board renders a
+     heading over an empty grid. */
+  it('has no empty categories', () => {
+    const used = new Set(items.map((i) => i.category));
+    for (const c of categories) expect(used.has(c.slug)).toBe(true);
+    for (const slug of used) expect(categories.some((c) => c.slug === slug)).toBe(true);
   });
 
   it('has a positive price, a blurb and an image for every item', () => {

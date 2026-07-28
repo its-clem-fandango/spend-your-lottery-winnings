@@ -35,13 +35,17 @@ for (const item of items) {
     );
   }
 
-  const [avif, webp] = await Promise.all([
+  const [avif, webp, thumb] = await Promise.all([
     getImage({ src: mod.default, format: 'avif', widths: WIDTHS, quality: 58 }),
-    getImage({ src: mod.default, format: 'webp', widths: WIDTHS, quality: 70 })
+    getImage({ src: mod.default, format: 'webp', widths: WIDTHS, quality: 70 }),
+    getImage({ src: mod.default, format: 'webp', width: 96, height: 96, quality: 70 })
   ]);
 
   images[item.id] = {
-    src: webp.src,
+    // getImage's own .src is the full-size original — a multi-megapixel
+    // decode for whoever falls back to it. Use the 420w candidate instead.
+    src: webp.srcSet.values.find((v) => v.descriptor === '420w')?.url ?? webp.src,
+    thumb: thumb.src,
     avif: avif.srcSet.attribute,
     webp: webp.srcSet.attribute,
     width: 420,

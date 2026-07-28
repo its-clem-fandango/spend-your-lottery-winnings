@@ -41,3 +41,12 @@ export function effectiveRate(gross: number): number {
   if (gross <= 0) return 0;
   return Math.round((1 - afterTax(gross) / gross) * 100);
 }
+
+/**
+ * What a jackpot is actually worth to spend. The one place gross becomes total,
+ * so starting a run, editing the winnings mid-game and decoding a share link
+ * can never disagree about it.
+ */
+export function spendable(gross: number, taxed: boolean): number {
+  return taxed ? Math.round(afterTax(gross)) : gross;
+}

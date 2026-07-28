@@ -1,13 +1,32 @@
+/* Negatives are reachable: lowering your winnings below what you've already
+   spent puts the balance in the red rather than trimming the cart. The sign
+   belongs outside the dollar sign — "$-1,140,000" reads as a typo. */
+
+/**
+ * Cents show only when there are cents. Almost everything on the board is a
+ * whole number of dollars and "$28,000.00" is noise, but a $10.50 burrito is
+ * $10.50 and rounding it to $11 makes the cart disagree with the receipt.
+ */
 export function money(n: number): string {
-  return '$' + Math.round(n).toLocaleString('en-US');
+  // Round to the cent first, so float drift can't surface as a stray fraction.
+  const cents = Math.round(n * 100);
+  // Math.abs before the sign test: -0 is not < 0, so there is no "-$0".
+  const abs = Math.abs(cents) / 100;
+  const digits = Number.isInteger(abs) ? 0 : 2;
+  return (
+    (cents < 0 ? '-$' : '$') +
+    abs.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+  );
 }
 
 export function shortMoney(n: number): string {
   n = Math.round(n);
-  if (n >= 1e9) return '$' + trim(n / 1e9) + 'B';
-  if (n >= 1e6) return '$' + trim(n / 1e6) + 'M';
-  if (n >= 1e3) return '$' + trim(n / 1e3) + 'K';
-  return '$' + n;
+  const sign = n < 0 ? '-' : '';
+  const a = Math.abs(n);
+  if (a >= 1e9) return sign + '$' + trim(a / 1e9) + 'B';
+  if (a >= 1e6) return sign + '$' + trim(a / 1e6) + 'M';
+  if (a >= 1e3) return sign + '$' + trim(a / 1e3) + 'K';
+  return sign + '$' + a;
 }
 
 function trim(x: number): string {

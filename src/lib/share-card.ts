@@ -67,15 +67,37 @@ export function drawShareCard(canvas: HTMLCanvasElement, data: ShareCardData): v
   }
   ctx.restore();
 
+  // Gilt double frame — the screenshot should look like it hangs in a lobby.
+  ctx.save();
+  const frame = ctx.createLinearGradient(0, 0, W, H);
+  frame.addColorStop(0, '#f9e08a');
+  frame.addColorStop(0.4, '#c08c22');
+  frame.addColorStop(0.7, '#f2cd6b');
+  frame.addColorStop(1, '#a9761c');
+  ctx.strokeStyle = frame;
+  ctx.lineWidth = 6;
+  ctx.strokeRect(14, 14, W - 28, H - 28);
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(26, 26, W - 52, H - 52);
+  ctx.restore();
+
   ctx.textBaseline = 'alphabetic';
 
-  // Kicker
+  // Kicker, with the share URL opposite it — the only row with guaranteed
+  // clearance. Bottom-right would collide with the LEFT OVER figure.
   ctx.fillStyle = '#e8b73c';
   ctx.font = `700 22px ${body}`;
   ctx.fillText('S P E N D   Y O U R   L O T T E R Y   W I N N I N G S', PAD, PAD + 8);
 
-  // Headline, shrunk to fit rather than wrapped
-  ctx.fillStyle = '#fdf9ef';
+  if (data.shareUrl) {
+    ctx.fillStyle = 'rgba(246,239,223,.4)';
+    ctx.font = `600 19px ${body}`;
+    ctx.textAlign = 'right';
+    ctx.fillText(clip(ctx, data.shareUrl, W - PAD * 2 - 620), W - PAD, PAD + 8);
+    ctx.textAlign = 'left';
+  }
+
+  // Headline in gold foil, shrunk to fit rather than wrapped
   const head = `Here's what ${money(data.total)} buys`;
   let size = 78;
   ctx.font = `900 ${size}px ${display}`;
@@ -83,6 +105,12 @@ export function drawShareCard(canvas: HTMLCanvasElement, data: ShareCardData): v
     size -= 3;
     ctx.font = `900 ${size}px ${display}`;
   }
+  const foil = ctx.createLinearGradient(0, PAD + 100 - size, 0, PAD + 100);
+  foil.addColorStop(0, '#fdf3cf');
+  foil.addColorStop(0.55, '#f2cd6b');
+  foil.addColorStop(0.8, '#caa030');
+  foil.addColorStop(1, '#f6d98a');
+  ctx.fillStyle = foil;
   ctx.fillText(head, PAD, PAD + 100);
 
   // Verdict
@@ -137,28 +165,32 @@ export function drawShareCard(canvas: HTMLCanvasElement, data: ShareCardData): v
   ctx.lineWidth = 2;
   line(ctx, PAD, fy - 34, W - PAD);
 
+  // Overspending is legitimate — lowering your winnings mid-run leaves the cart
+  // alone — so the last cell has to be able to report a hole, not just a
+  // remainder.
+  const underwater = data.remaining < 0;
   const cells: Array<[string, string]> = [
     ['PURCHASES', String(data.count)],
     ['SPENT', money(data.spent)],
-    ['LEFT OVER', money(data.remaining)]
+    [underwater ? 'IN THE HOLE' : 'LEFT OVER', money(data.remaining)]
   ];
   cells.forEach(([label, value], i) => {
     const x = PAD + i * 300;
     ctx.fillStyle = 'rgba(246,239,223,.45)';
     ctx.font = `700 18px ${body}`;
     ctx.fillText(label, x, fy);
-    ctx.fillStyle = i === 2 ? '#e8b73c' : '#fdf9ef';
-    ctx.font = `900 40px ${display}`;
+    ctx.fillStyle = i === 2 ? (underwater ? '#ff9b93' : '#e8b73c') : '#fdf9ef';
+    // Cells are fixed 300px apart, and a ten-figure spend overruns its column.
+    // Shrink to fit rather than letting neighbours collide.
+    let s = 40;
+    ctx.font = `900 ${s}px ${display}`;
+    while (ctx.measureText(value).width > 286 && s > 22) {
+      s -= 2;
+      ctx.font = `900 ${s}px ${display}`;
+    }
     ctx.fillText(value, x, fy + 44);
   });
 
-  if (data.shareUrl) {
-    ctx.fillStyle = 'rgba(246,239,223,.34)';
-    ctx.font = `600 20px ${body}`;
-    ctx.textAlign = 'right';
-    ctx.fillText(data.shareUrl, W - PAD, fy + 40);
-    ctx.textAlign = 'left';
-  }
 }
 
 function line(ctx: CanvasRenderingContext2D, x1: number, y: number, x2: number) {

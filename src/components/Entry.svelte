@@ -1,7 +1,8 @@
 <script lang="ts">
+  import AmountField from './AmountField.svelte';
   import { money, clamp } from '../lib/money';
   import { afterTax, effectiveRate } from '../lib/tax';
-  import { MAX_AMOUNT } from '../lib/slider';
+  import { MAX_AMOUNT } from '../lib/amount';
 
   interface Props {
     onstart: (gross: number, taxed: boolean) => void;
@@ -14,8 +15,7 @@
      static.) */
   let gross = $state(0);
   let taxed = $state(false);
-  let field = $state('');
-  let inputEl: HTMLInputElement | undefined = $state();
+  let field = $state<AmountField | null>(null);
 
   const CHIPS = [
     { amount: 2_000_000, label: '$2M', note: 'local news story' },
@@ -35,53 +35,11 @@
      Touch devices skip it — popping the keyboard on load is hostile. */
   $effect(() => {
     ready = true;
-    if (matchMedia('(pointer: fine)').matches) inputEl?.focus();
+    if (matchMedia('(pointer: fine)').matches) field?.focus();
   });
 
   function setAmount(value: number) {
     gross = clamp(Math.round(value), 0, MAX_AMOUNT);
-    field = gross ? gross.toLocaleString('en-US') : '';
-  }
-
-  /* Rejecting a keystroke silently reads as "the site is broken". Shake the
-     line and say why, every time, until the message lands. */
-  let nudged = $state(false);
-  let nudgeTimer: ReturnType<typeof setTimeout> | undefined;
-  function nudge() {
-    nudged = false; // drop and re-add the class so the animation restarts
-    requestAnimationFrame(() => (nudged = true));
-    clearTimeout(nudgeTimer);
-    nudgeTimer = setTimeout(() => (nudged = false), 1800);
-  }
-  $effect(() => () => clearTimeout(nudgeTimer));
-
-  /* Typed non-digits never enter the field at all — dollars are whole numbers
-     here, so that includes '.' and ','. Paste is allowed through and sanitised
-     in onInput instead, so "$1,200" pasted from somewhere still lands as 1,200. */
-  function onBeforeInput(e: InputEvent) {
-    if (e.inputType === 'insertText' && e.data && /\D/.test(e.data)) {
-      e.preventDefault();
-      nudge();
-    }
-  }
-
-  /* Reformat as the user types without the caret jumping to the end. */
-  function onInput(e: Event) {
-    const el = e.currentTarget as HTMLInputElement;
-    const caret = el.selectionStart ?? 0;
-    const before = el.value.length;
-    const parsed = parseFloat(el.value.replace(/[^0-9.]/g, ''));
-    gross = clamp(Math.round(Number.isFinite(parsed) ? parsed : 0), 0, MAX_AMOUNT);
-    field = gross ? gross.toLocaleString('en-US') : '';
-    /* When sanitising leaves the parsed value unchanged (paste junk into
-       "1,200"), no state changes and Svelte skips the DOM write — sync it by
-       hand or the junk stays visible. */
-    if (/[^0-9,]/.test(el.value)) nudge();
-    if (el.value !== field) el.value = field;
-    queueMicrotask(() => {
-      const shift = field.length - before;
-      try { el.setSelectionRange(caret + shift, caret + shift); } catch {}
-    });
   }
 
   function start() {
@@ -96,21 +54,14 @@
 
     <h1><label for="amount">If I <em>won</em><span class="vh"> — jackpot amount in dollars</span>&hellip;</label></h1>
 
-    <div class="line" class:nudged>
-      <span class="oops" class:show={nudged} role="status">{nudged ? 'Numbers only.' : ''}</span>
-      <span class="dollar" aria-hidden="true">$</span>
-      <input
-        id="amount"
-        type="text"
-        inputmode="numeric"
-        autocomplete="off"
-        bind:this={inputEl}
-        value={field}
-        onbeforeinput={onBeforeInput}
-        oninput={onInput}
-        onfocus={(e) => e.currentTarget.select()}
-        onkeydown={(e) => e.key === 'Enter' && start()}
-        aria-describedby="tax-detail"
+    <div class="answer">
+      <AmountField
+        bind:this={field}
+        value={gross}
+        size="hero"
+        describedby="tax-detail"
+        onvalue={(n) => (gross = n)}
+        onsubmit={start}
       />
     </div>
 
@@ -220,75 +171,7 @@
     50% { background-position: 100% 0; }
   }
 
-  /* The answer line: no box, just an underline that wakes up when you do. */
-  .line {
-    position: relative;
-    display: flex;
-    align-items: baseline;
-    gap: clamp(8px, 1.6vw, 16px);
-    margin-top: clamp(18px, 4vw, 34px);
-    padding-bottom: 10px;
-    border-bottom: 3px solid rgba(232, 183, 60, 0.3);
-    transition: border-color 0.2s ease;
-  }
-  .line:focus-within { border-color: var(--gold); }
-  .line:focus-within .dollar { opacity: 1; }
-  .line.nudged { border-color: var(--red); animation: line-shake 0.4s ease; }
-  @keyframes line-shake {
-    0%, 100% { transform: none; }
-    20% { transform: translateX(-7px); }
-    40% { transform: translateX(6px); }
-    60% { transform: translateX(-4px); }
-    80% { transform: translateX(2px); }
-  }
-  .oops {
-    position: absolute;
-    right: 0;
-    bottom: calc(100% + 10px);
-    padding: 6px 13px;
-    border-radius: 999px;
-    background: rgba(216, 72, 63, 0.14);
-    border: 1px solid rgba(216, 72, 63, 0.5);
-    color: #ffb9b2;
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-    opacity: 0;
-    transform: translateY(4px);
-    pointer-events: none;
-    transition: opacity 0.18s ease, transform 0.18s ease;
-  }
-  .oops.show { opacity: 1; transform: none; }
-  @media (prefers-reduced-motion: reduce) {
-    .line.nudged { animation: none; }
-  }
-  .dollar {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: clamp(34px, 6.6vw, 62px);
-    color: var(--gold);
-    line-height: 1;
-    opacity: 0.75;
-    transition: opacity 0.2s ease;
-  }
-  .line input {
-    flex: 1;
-    min-width: 0;
-    width: 100%;
-    background: none;
-    border: 0;
-    outline: none;
-    color: var(--cream-2);
-    font-family: var(--display);
-    font-weight: 900;
-    font-variant-numeric: tabular-nums;
-    font-size: clamp(38px, 8vw, 72px);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    padding: 0;
-    caret-color: var(--gold);
-  }
-  .line input::selection { background: rgba(232, 183, 60, 0.35); }
+  .answer { margin-top: clamp(18px, 4vw, 34px); }
 
   /* Tax reality as a sentence, not a control panel. */
   .tax {

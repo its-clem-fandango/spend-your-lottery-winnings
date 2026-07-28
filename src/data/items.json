@@ -466,7 +466,7 @@
   {
     "id": "birkin",
     "code": "18",
-    "name": "Hermès Birkin, crocodile",
+    "name": "Herm\u00e8s Birkin, crocodile",
     "price": 55000,
     "category": "splurges",
     "blurb": "You don't buy one. You're chosen.",
@@ -645,7 +645,7 @@
     "name": "Donate to a cause you love",
     "price": 500000,
     "category": "giving",
-    "blurb": "The rare purchase with no buyer’s remorse.",
+    "blurb": "The rare purchase with no buyer\u2019s remorse.",
     "image": "donate.jpg",
     "imageCredit": {
       "author": "Lance Cpl. Tiffany Edwards",
@@ -670,5 +670,64 @@
       "url": "https://commons.wikimedia.org/wiki/File:College_of_DuPage_Celebrates_Annual_High_School_Diploma_Ceremony_(54533012249).jpg"
     },
     "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "phillips-bbq",
+    "code": "01",
+    "name": "Phillips BBQ rib tip dinner",
+    "price": 25,
+    "category": "splurges",
+    "blurb": "Rib tips, hot link, white bread. Still the correct answer.",
+    "image": "phillips-bbq.jpg",
+    "imageCredit": {
+      "author": "Heather Cowper",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Briskets_and_ribs_at_Black%27s_Barbecue.jpg"
+    },
+    "priceVerified": "2026-07-28"
+  },
+  {
+    "id": "baja-burrito",
+    "code": "06",
+    "name": "Baja Catch & Grill veggie burrito",
+    "price": 10.5,
+    "category": "splurges",
+    "blurb": "The cheapest thing on this entire board, and not the worst one.",
+    "image": "baja-burrito.jpg",
+    "imageCredit": {
+      "author": "Andy Li",
+      "source": "Wikimedia Commons",
+      "license": "CC0",
+      "url": "https://commons.wikimedia.org/wiki/File:Avocado_Burrito_-_Potatoast_2025-12-30.jpg"
+    },
+    "priceVerified": "2026-07-28"
+  },
+  {
+    "id": "raiders-season",
+    "code": "0a",
+    "name": "Raiders season tickets, two seats",
+    "price": 6100,
+    "category": "sports",
+    "blurb": "Every home game, someone beside you. Bring a coat for the fourth quarter.",
+    "image": "raiders-season.jpg",
+    "imageCredit": {
+      "author": "BrokenSphere",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 3.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Raiders_in_huddle_at_Falcons_at_Raiders_11-2-08_1.JPG"
+    },
+    "priceVerified": "2026-07-28"
+  },
+  {
+    "id": "raiders-suite",
+    "code": "0p",
+    "name": "Raiders suite, one home game",
+    "price": 35000,
+    "category": "sports",
+    "blurb": "Catered, climate controlled, and still a Raiders game.",
+    "image": "raiders-suite.webp",
+    "imageCredit": null,
+    "priceVerified": "2026-07-28"
   }
 ]

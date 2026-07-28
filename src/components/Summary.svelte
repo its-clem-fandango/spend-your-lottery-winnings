@@ -25,6 +25,19 @@
     canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   });
 
+  /* Runs before the draw effect below, so the trigger is captured before
+     focus moves to the close button. Restoring can silently fail if the
+     trigger is gone or inert by then — that's fine, focus just stays put. */
+  let returnTo: HTMLElement | null = null;
+  $effect(() => {
+    if (open) {
+      returnTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    } else if (returnTo) {
+      returnTo.focus();
+      returnTo = null;
+    }
+  });
+
   $effect(() => {
     if (!open || !canvas) return;
     const data = { total, spent, remaining, count, rows, shareUrl: prettyUrl(shareUrl) };

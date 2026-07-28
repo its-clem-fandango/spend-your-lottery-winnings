@@ -12,6 +12,10 @@ import { defineConfig, devices } from '@playwright/test';
 const executablePath = process.env.CHROMIUM_PATH || undefined;
 const launchOptions = executablePath ? { executablePath } : {};
 
+/** E2E_PORT dodges a clash when another dev server already owns 4321 —
+ *  `reuseExistingServer` would otherwise silently test the wrong app. */
+const port = Number(process.env.E2E_PORT) || 4321;
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -19,7 +23,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
-    baseURL: 'http://localhost:4321',
+    baseURL: `http://localhost:${port}`,
     trace: 'on-first-retry'
   },
   projects: [
@@ -27,8 +31,8 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'], launchOptions } }
   ],
   webServer: {
-    command: 'npm run build && npx astro preview --port 4321',
-    url: 'http://localhost:4321',
+    command: `npm run build && npx astro preview --port ${port}`,
+    url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000
   }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { untrack } from 'svelte';
+  import { flushSync, untrack } from 'svelte';
   import { money } from '../lib/money';
 
   interface Props {
@@ -7,11 +7,24 @@
     spent: number;
     remaining: number;
     count: number;
-    broke: boolean;
+    /** A single add was just turned down — transient, ~1s. */
+    refused: boolean;
+    /** How far past the winnings the cart has gone; 0 while solvent. */
+    deficit: number;
+    deficitLine: string;
     onopencart: () => void;
     onhelp: () => void;
+    oneditwinnings: () => void;
   }
-  let { total, spent, remaining, count, broke, onopencart, onhelp }: Props = $props();
+  let {
+    total, spent, remaining, count, refused, deficit, deficitLine,
+    onopencart, onhelp, oneditwinnings
+  }: Props = $props();
+
+  /* In the red every tap is refused, so the "you're broke" swap would blank the
+     deficit figure roughly constantly — hiding the exact number the banner is
+     making fun of. The refusal copy is for running out, not for being under. */
+  let showRefusedCopy = $derived(refused && deficit === 0);
 
   let bar = $state<HTMLElement | null>(null);
   let cartBtn = $state<HTMLButtonElement | null>(null);
@@ -22,11 +35,16 @@
   let shownRemaining = $state(0);
   let ready = false;
 
+  let bumpTimer: ReturnType<typeof setTimeout> | undefined;
+
   export function bump() {
-    bumping = false;
+    // Flush the class removal to the DOM before the reflow, or the toggle
+    // collapses to a no-op and the animation never restarts.
+    flushSync(() => (bumping = false));
     void cartBtn?.offsetWidth;
     bumping = true;
-    setTimeout(() => (bumping = false), 400);
+    clearTimeout(bumpTimer);
+    bumpTimer = setTimeout(() => (bumping = false), 400);
   }
 
   export function cartElement() {
@@ -53,8 +71,14 @@
     const step = (now: number) => {
       const p = Math.min(1, (now - t0) / 430);
       const eased = 1 - Math.pow(1 - p, 3);
-      shownSpent = fromSpent + (toSpent - fromSpent) * eased;
-      shownRemaining = fromRemaining + (toRemaining - fromRemaining) * eased;
+      /* Whole dollars while rolling, the exact figure once landed. money()
+         renders cents when a value has them, and every intermediate frame of a
+         tween has them — without this the counters jitter two extra digits the
+         whole way down and the column keeps resizing. */
+      const s = fromSpent + (toSpent - fromSpent) * eased;
+      const r = fromRemaining + (toRemaining - fromRemaining) * eased;
+      shownSpent = p < 1 ? Math.round(s) : toSpent;
+      shownRemaining = p < 1 ? Math.round(r) : toRemaining;
       frame = p < 1 ? requestAnimationFrame(step) : undefined;
     };
     frame = requestAnimationFrame(step);
@@ -108,16 +132,23 @@
     <dl class="stats" data-tour="stats">
       <div class="stat">
         <dt>Winnings</dt>
-        <dd class="num">{money(total)}</dd>
+        <dd>
+          <button
+            class="edit-winnings num"
+            type="button"
+            onclick={oneditwinnings}
+            aria-label="Winnings {money(total)}. Change amount or start over"
+          >{money(total)}</button>
+        </dd>
       </div>
       <div class="stat">
         <dt>Spent</dt>
         <dd class="num">{money(shownSpent)}</dd>
       </div>
-      <div class="stat remaining" class:broke>
+      <div class="stat remaining" class:refused={showRefusedCopy} class:in-debt={deficit > 0}>
         <dt>Remaining</dt>
-        <dd class="num" class:broke-copy={broke}>
-          {broke ? "Nope. You're broke." : money(shownRemaining)}
+        <dd class="num" class:broke-copy={showRefusedCopy}>
+          {showRefusedCopy ? "Nope. You're broke." : money(shownRemaining)}
         </dd>
       </div>
     </dl>
@@ -133,9 +164,21 @@
 
   <div class="progress">
     <div class="track">
-      <div class="fill" class:hot={pct > 92} style="width:{pct}%"></div>
+      <div class="fill" class:hot={pct > 92 && !deficit} class:over={deficit > 0} style="width:{pct}%"></div>
     </div>
   </div>
+
+  <!-- Inside the sticky header on purpose: the ResizeObserver above publishes
+       this element's height as --topbar-h, which parks the board's tab rail.
+       As a sibling below, the banner would scroll away and the rail would
+       ride over it. The figure is the real deficit, not the tween, so the
+       live region announces once per action instead of once per frame. -->
+  {#if deficit > 0}
+    <div class="debt" role="status">
+      <strong>{money(-deficit)} in the hole.</strong>
+      <span>{deficitLine}</span>
+    </div>
+  {/if}
 </header>
 
 <style>
@@ -179,9 +222,31 @@
     margin: 0 0 2px;
     white-space: nowrap;
   }
-  .stat dd { margin: 0; font-size: clamp(17px, 4.2vw, 26px); line-height: 1.1; white-space: nowrap; }
-  .stat.remaining dd { color: var(--gold); }
-  .stat.remaining.broke dd { color: #ff9b93; }
+  .stat dd { margin: 0; font-size: clamp(17px, 4.2vw, 27px); line-height: 1.1; white-space: nowrap; }
+
+  /* Reads as the number it replaces, with just enough of a hint to be findable. */
+  .edit-winnings {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    border-bottom: 1.5px dashed rgba(246, 239, 223, 0.3);
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .edit-winnings:hover { color: var(--gold); border-bottom-color: var(--gold); }
+  .edit-winnings:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 3px; }
+  /* The number that matters gets the foil treatment. */
+  .stat.remaining dd {
+    background: var(--foil);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .stat.remaining.refused dd,
+  .stat.remaining.in-debt dd { background: none; color: #ff9b93; }
   .broke-copy {
     font-family: var(--body) !important;
     font-weight: 700;
@@ -215,11 +280,14 @@
   .cart {
     flex: none;
     position: relative;
-    background: var(--gold);
+    background: var(--foil-btn);
     color: var(--green-900);
-    padding: 11px 16px;
+    padding: 11px 18px;
     font-size: 14px;
+    font-weight: 900;
     border-radius: 999px;
+    border: 1px solid rgba(139, 94, 18, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.85), 0 4px 14px -4px rgba(232, 183, 60, 0.7);
   }
   .cart:hover { transform: translateY(-2px); }
   .count {
@@ -247,13 +315,55 @@
   }
 
   .progress { max-width: 1180px; margin: 12px auto 0; padding: 0 clamp(14px, 3vw, 28px) 12px; }
-  .track { height: 8px; border-radius: 99px; background: rgba(0, 0, 0, 0.28); overflow: hidden; }
+
+  .debt {
+    background: var(--red);
+    color: var(--cream-2);
+    padding: 7px clamp(14px, 3vw, 28px);
+    font-size: 12.5px;
+    line-height: 1.4;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 7px;
+    animation: debt-in 0.28s ease;
+  }
+  .debt strong { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .debt span { opacity: 0.88; }
+  @keyframes debt-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+  .track {
+    height: 10px;
+    border-radius: 99px;
+    background: rgba(0, 0, 0, 0.32);
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(232, 183, 60, 0.18);
+  }
   .fill {
+    position: relative;
     height: 100%;
     width: 0;
     border-radius: 99px;
-    background: linear-gradient(90deg, var(--gold-soft), var(--gold));
+    background: linear-gradient(90deg, var(--gold-soft), var(--gold) 60%, var(--gold-deep));
     transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow: hidden;
   }
   .fill.hot { background: linear-gradient(90deg, var(--gold), #ff9b6b); }
+  /* pct is already clamped to 100, so the bar just pins full and turns. */
+  .fill.over { background: linear-gradient(90deg, var(--red), #ff7a6d); }
+  /* Money in motion should glitter. Reduced-motion kills this globally. */
+  .fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 252, 240, 0.6) 50%, transparent 70%);
+    background-size: 220px 100%;
+    background-repeat: no-repeat;
+    animation: glitter 2.4s ease-in-out infinite;
+  }
+  @keyframes glitter {
+    0% { background-position: -220px 0; }
+    60%, 100% { background-position: calc(100% + 220px) 0; }
+  }
 </style>

@@ -1,18 +1,22 @@
 <script lang="ts">
+  import { flushSync } from 'svelte';
   import Entry from './Entry.svelte';
   import Topbar from './Topbar.svelte';
   import Board from './Board.svelte';
   import CartDrawer from './CartDrawer.svelte';
   import Summary from './Summary.svelte';
   import Tour from './Tour.svelte';
+  import WinningsDialog from './WinningsDialog.svelte';
 
-  import { afterTax } from '../lib/tax';
+  import { spendable } from '../lib/tax';
   import { shortMoney } from '../lib/money';
+  import { brokeLine } from '../lib/broke';
   import { encodeRun, decodeRun } from '../lib/share-code';
   import { hasSeenTour, markTourSeen } from '../lib/tour';
+  import { loadRun, saveRun, clearRun } from '../lib/persist';
   import {
     indexItems, spent as spentOf, remaining as remainingOf,
-    itemCount, addItem, removeItem, isStuck, ranked
+    itemCount, addItem, removeItem, clearCart, isStuck, ranked
   } from '../lib/cart';
   import type { Category, GameState, Item, ItemImage } from '../lib/types';
 
@@ -30,7 +34,8 @@
   let cartOpen = $state(false);
   let summaryOpen = $state(false);
   let tourOpen = $state(false);
-  let broke = $state(false);
+  let winningsOpen = $state(false);
+  let refused = $state(false);
   let shaking = $state(false);
   let flashing = $state(false);
 
@@ -44,32 +49,65 @@
   let stuck = $derived(isStuck(state, index, items));
   let rows = $derived(ranked(state, index));
 
+  /* Derived here rather than in Topbar so Game stays the one place that decides
+     what gets shown. Reads the real remaining, never the topbar's tween, or the
+     banner would flicker its way in and out mid-animation. */
+  let deficit = $derived(Math.max(0, -remaining));
+  let deficitLine = $derived(deficit > 0 ? brokeLine(deficit, state.total) : '');
+
   let shareUrl = $derived.by(() => {
     if (typeof window === 'undefined') return '';
-    const code = encodeRun(state.total, state.taxed, state.cart, state.order, items);
+    const code = encodeRun(state.gross, state.taxed, state.cart, state.order, items);
     return `${window.location.origin}${window.location.pathname}?r=${code}`;
   });
 
-  let brokeTimer: ReturnType<typeof setTimeout> | undefined;
+  let refuseTimer: ReturnType<typeof setTimeout> | undefined;
+  let flashTimer: ReturnType<typeof setTimeout> | undefined;
 
-  /* A shared run in the URL replays straight into the board. */
+  /**
+   * One restore, once. A shared link wins on the visit that carries it, then
+   * the query is stripped — otherwise ?r= would keep winning over your own
+   * saved progress on every later refresh, silently discarding anything you
+   * bought after opening the link.
+   */
+  let hydrated = false;
   $effect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || hydrated) return;
+    hydrated = true;
+
     const code = new URLSearchParams(window.location.search).get('r');
-    if (!code) return;
-    const run = decodeRun(code, items);
-    if (!run) return;
-    state = { gross: run.amount, taxed: run.taxed, total: run.amount, cart: run.cart, order: run.order };
-    started = true;
+    if (code) {
+      const run = decodeRun(code, items);
+      if (run) {
+        state = { gross: run.gross, taxed: run.taxed, total: run.total, cart: run.cart, order: run.order };
+        started = true;
+        history.replaceState(null, '', window.location.pathname);
+        return;
+      }
+    }
+
+    const saved = loadRun(items);
+    if (saved) {
+      state = saved;
+      started = true;
+    }
+  });
+
+  /* Refresh stops being how you reset. Guarded on started so the one run at
+     boot, with the blank state, doesn't wipe what we just restored. */
+  $effect(() => {
+    if (!started) return;
+    saveRun($state.snapshot(state));
   });
 
   $effect(() => {
-    if (started) document.title = `Spending ${shortMoney(state.total)} — Spend Your Lottery Winnings`;
+    document.title = started
+      ? `Spending ${shortMoney(state.total)} — Spend Your Lottery Winnings`
+      : 'Spend Your Lottery Winnings';
   });
 
   function start(gross: number, taxed: boolean) {
-    const total = taxed ? Math.round(afterTax(gross)) : gross;
-    state = { gross, taxed, total, cart: {}, order: [] };
+    state = { gross, taxed, total: spendable(gross, taxed), cart: {}, order: [] };
     started = true;
     window.scrollTo(0, 0);
     // Marked at open, not at finish: the tour auto-runs exactly once, ever,
@@ -84,10 +122,30 @@
     tourOpen = false;
     summaryOpen = false;
     cartOpen = false;
+    winningsOpen = false;
     started = false;
     state = { gross: 0, taxed: false, total: 0, cart: {}, order: [] };
+    clearRun();
     history.replaceState(null, '', window.location.pathname);
     window.scrollTo(0, 0);
+  }
+
+  /** Changing the jackpot deliberately leaves the cart alone — that's the point
+      of having it. Spending past the new total just goes into the red. */
+  function applyWinnings(gross: number, taxed: boolean) {
+    state = { ...state, gross, taxed, total: spendable(gross, taxed) };
+    winningsOpen = false;
+  }
+
+  /* Closes the drawer first: the board goes inert under the dialog, and
+     closeCart() would otherwise try to hand focus back to an inert button. */
+  function openWinnings() {
+    cartOpen = false;
+    winningsOpen = true;
+  }
+
+  function clear() {
+    state = clearCart(state);
   }
 
   function add(id: string, el?: HTMLElement) {
@@ -111,18 +169,21 @@
    * Without this the whole thing feels like a form.
    */
   function refuse() {
-    shaking = false;
+    // Svelte batches state→DOM, so the classic remove/reflow/re-add restart
+    // only works if the removal is flushed to the DOM first.
+    flushSync(() => (shaking = false));
     void root?.offsetWidth;
     shaking = true;
     flashing = true;
-    broke = true;
+    refused = true;
     navigator.vibrate?.(40);
 
-    clearTimeout(brokeTimer);
-    setTimeout(() => (flashing = false), 260);
-    brokeTimer = setTimeout(() => {
+    clearTimeout(flashTimer);
+    clearTimeout(refuseTimer);
+    flashTimer = setTimeout(() => (flashing = false), 260);
+    refuseTimer = setTimeout(() => {
       shaking = false;
-      broke = false;
+      refused = false;
     }, 1150);
   }
 
@@ -153,11 +214,19 @@
     setTimeout(() => ghost.remove(), 680);
   }
 
+  /* Closing the drawer strands focus inside a now-inert subtree, so hand it
+     back to the button that owns the drawer. */
+  function closeCart() {
+    cartOpen = false;
+    topbar?.cartElement()?.focus();
+  }
+
   function onKeydown(e: KeyboardEvent) {
     if (tourOpen) return; // the tour owns the keyboard while it's up
     if (e.key !== 'Escape') return;
-    if (summaryOpen) summaryOpen = false;
-    else if (cartOpen) cartOpen = false;
+    if (winningsOpen) winningsOpen = false;
+    else if (summaryOpen) summaryOpen = false;
+    else if (cartOpen) closeCart();
   }
 </script>
 
@@ -166,15 +235,20 @@
 {#if !started}
   <Entry onstart={start} />
 {:else}
-  <div class="game" class:shake={shaking} bind:this={root} inert={tourOpen}>
+  <!-- inert while an overlay is up: aria-modal alone doesn't stop Tab from
+       wandering into the board behind it. -->
+  <div class="game" class:shake={shaking} bind:this={root} inert={summaryOpen || tourOpen || winningsOpen}>
     <Topbar
       bind:this={topbar}
       total={state.total}
       {spent}
       {remaining}
       {count}
-      {broke}
+      {refused}
+      {deficit}
+      {deficitLine}
       onopencart={() => (cartOpen = true)}
+      oneditwinnings={openWinnings}
       onhelp={() => { cartOpen = false; tourOpen = true; }}
     />
 
@@ -185,8 +259,12 @@
       {images}
       cart={state.cart}
       {remaining}
+      {count}
+      {spent}
       onadd={add}
       onremove={remove}
+      onclear={clear}
+      ondone={() => (summaryOpen = true)}
     />
 
     <div class="nudge" class:on={stuck && !summaryOpen} role="status">
@@ -204,9 +282,10 @@
     {index}
     {images}
     {spent}
-    onclose={() => (cartOpen = false)}
+    onclose={closeCart}
     onadd={(id) => add(id)}
     onremove={remove}
+    onclear={clear}
     ondone={() => { cartOpen = false; summaryOpen = true; }}
   />
 
@@ -219,6 +298,18 @@
     {rows}
     {shareUrl}
     onclose={() => (summaryOpen = false)}
+    onrestart={restart}
+  />
+
+  <WinningsDialog
+    open={winningsOpen}
+    gross={state.gross}
+    taxed={state.taxed}
+    {spent}
+    {count}
+    onapply={applyWinnings}
+    onclose={() => (winningsOpen = false)}
+    onclear={() => { clear(); winningsOpen = false; }}
     onrestart={restart}
   />
 
@@ -253,6 +344,7 @@
     z-index: 45;
     background: var(--green-800);
     color: var(--cream-2);
+    border: 1px solid rgba(232, 183, 60, 0.55);
     border-radius: 999px;
     padding: 11px 12px 11px 20px;
     display: flex;

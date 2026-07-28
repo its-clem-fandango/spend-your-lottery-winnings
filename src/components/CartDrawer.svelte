@@ -1,5 +1,6 @@
 <script lang="ts">
   import { money } from '../lib/money';
+  import { twoStep } from '../lib/confirm.svelte';
   import type { Cart, Item, ItemImage } from '../lib/types';
 
   interface Props {
@@ -12,26 +13,33 @@
     onclose: () => void;
     onadd: (id: string) => void;
     onremove: (id: string) => void;
+    onclear: () => void;
     ondone: () => void;
   }
-  let { open, order, cart, index, images, spent, onclose, onadd, onremove, ondone }: Props = $props();
+  let { open, order, cart, index, images, spent, onclose, onadd, onremove, onclear, ondone }: Props = $props();
 
   let closeBtn = $state<HTMLButtonElement | null>(null);
 
   $effect(() => {
     if (open) closeBtn?.focus();
   });
+
+  /* Two-step rather than a confirm dialog: the drawer is already a dialog, and
+     nesting one inside it means nesting focus traps. */
+  const confirmClear = twoStep(() => onclear());
+
+  $effect(() => {
+    if (!open || !order.length) confirmClear.disarm();
+  });
+
+  $effect(() => () => confirmClear.disarm());
 </script>
 
-<div
-  class="scrim"
-  class:on={open}
-  onclick={onclose}
-  onkeydown={(e) => e.key === 'Enter' && onclose()}
-  role="presentation"
-></div>
+<div class="scrim" class:on={open} onclick={onclose} role="presentation"></div>
 
-<aside class="drawer" class:on={open} role="dialog" aria-modal="false" aria-labelledby="cart-title" aria-hidden={!open}>
+<!-- inert (not aria-hidden) while closed: the drawer is only translated
+     offscreen, and aria-hidden alone would leave its buttons in the tab order. -->
+<aside class="drawer" class:on={open} inert={!open} role="dialog" aria-labelledby="cart-title">
   <div class="head">
     <h2 id="cart-title">The haul</h2>
     <button class="icon-btn close" type="button" bind:this={closeBtn} onclick={onclose} aria-label="Close cart">✕</button>
@@ -51,7 +59,7 @@
           <li class="row">
             <span class="thumb">
               {#if images[id]}
-                <img src={images[id].src} alt="" width="48" height="48" loading="lazy" decoding="async" />
+                <img src={images[id].thumb} alt="" width="48" height="48" loading="lazy" decoding="async" />
               {/if}
             </span>
             <span class="main">
@@ -76,7 +84,22 @@
       <span>Total spent</span>
       <strong>{money(spent)}</strong>
     </div>
-    <button class="btn done" type="button" onclick={ondone}>I'm done spending</button>
+    <div class="buttons">
+      {#if order.length}
+        <!-- "Press" rather than tap or click: one word that's true on both a
+             phone and a keyboard, and one selector that covers both in tests. -->
+        <button class="btn clear" type="button" class:armed={confirmClear.armed} onclick={confirmClear.press}>
+          {confirmClear.armed ? 'Press again' : 'Clear cart'}
+        </button>
+        <span class="vh" role="status">
+          {confirmClear.armed ? 'Press the clear button again to empty your cart.' : ''}
+        </span>
+      {/if}
+      <button class="btn done" type="button" onclick={ondone}>I'm done spending</button>
+    </div>
+    {#if order.length}
+      <p class="keeps">Clearing empties the cart. Your winnings stay put.</p>
+    {/if}
   </div>
 </aside>
 
@@ -172,6 +195,42 @@
     letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
   }
-  .done { width: 100%; background: var(--green-800); color: var(--cream-2); padding: 15px; font-size: 15.5px; border-radius: 999px; }
-  .done:hover { background: var(--green-700); transform: translateY(-2px); }
+  /* Side by side so clearing is a visible option rather than fine print under
+     the primary button — it's the other thing you might want from this screen. */
+  .buttons { display: flex; gap: 9px; }
+  .done {
+    flex: 1 1 auto;
+    background: var(--foil-btn);
+    color: var(--green-900);
+    padding: 15px;
+    font-size: 15.5px;
+    font-weight: 900;
+    border-radius: 999px;
+    border: 1px solid rgba(139, 94, 18, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.85), 0 8px 20px -8px rgba(232, 183, 60, 0.8);
+  }
+  .done:hover { transform: translateY(-2px); }
+
+  .clear {
+    flex: 0 0 auto;
+    background: transparent;
+    border: 1.5px solid rgba(216, 72, 63, 0.45);
+    color: var(--red);
+    padding: 15px 17px;
+    font-size: 14.5px;
+    font-weight: 700;
+    border-radius: 999px;
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .clear:hover { background: rgba(216, 72, 63, 0.09); border-color: var(--red); }
+  .clear.armed { background: var(--red); color: var(--cream-2); border-color: var(--red); }
+  .clear:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+  .keeps {
+    margin: 10px 0 0;
+    text-align: center;
+    font-size: 11.5px;
+    color: rgba(10, 31, 24, 0.42);
+  }
 </style>

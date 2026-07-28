@@ -31,8 +31,10 @@ export interface Category {
  * component.
  */
 export interface ItemImage {
-  /** Fallback src for the <img> element (WebP, mid width). */
+  /** Fallback src for the <img> element (WebP, 420w — never the original). */
   src: string;
+  /** Small square WebP for cart thumbnails, cheap to decode. */
+  thumb: string;
   /** AVIF candidates — smallest, tried first. */
   avif: string;
   /** WebP candidates — universally supported fallback. */
