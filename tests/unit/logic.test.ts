@@ -213,7 +213,7 @@ describe('verdict', () => {
 });
 
 describe('data integrity', () => {
-  it('has 41 items', () => expect(items).toHaveLength(41));
+  it('has 42 items', () => expect(items).toHaveLength(42));
 
   it('has unique ids and share codes', () => {
     expect(new Set(items.map((i) => i.id)).size).toBe(items.length);
@@ -228,7 +228,7 @@ describe('data integrity', () => {
     for (const id of ['camry', 'lexus-rx', 'range-rover']) {
       expect(items.some((i) => i.id === id)).toBe(true);
     }
-    const homes = items.filter((i) => /santa-barbara|tahoe-cabin|aspen-chalet/.test(i.id));
+    const homes = items.filter((i) => /tahoe-cabin|aspen-chalet|manhattan-beach/.test(i.id));
     expect(homes).toHaveLength(3);
   });
 

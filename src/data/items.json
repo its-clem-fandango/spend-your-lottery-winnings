@@ -1,13 +1,34 @@
 [
   {
+    "id": "jetski",
+    "code": "0z",
+    "name": "Jet ski",
+    "price": 18000,
+    "category": "cars",
+    "blurb": "The lake will hear you before it sees you.",
+    "image": "jetski.jpg",
+    "imageCredit": {
+      "author": "PattayaPatrol",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:DFC_0467_Rider_in_a_neon_green_helmet_and_life_vest_speeds_across_the_water_on_a_yellow-and-black_jet_ski_marked_with_the_number_58.jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
     "id": "camry",
     "code": "00",
     "name": "Toyota Camry",
     "price": 28000,
     "category": "cars",
     "blurb": "The responsible choice you'll regret.",
-    "image": "camry.png",
-    "imageCredit": null,
+    "image": "camry.jpg",
+    "imageCredit": {
+      "author": "MercurySable99",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:2025_Toyota_Camry_LE,_front_left,_05-24-2025.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -17,8 +38,45 @@
     "price": 58000,
     "category": "cars",
     "blurb": "A Camry that went to business school.",
-    "image": "lexus-rx.png",
-    "imageCredit": null,
+    "image": "lexus-rx.jpg",
+    "imageCredit": {
+      "author": "Carlito714",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:2023_Lexus_RX_350_(front).jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "mustang",
+    "code": "05",
+    "name": "'67 Mustang, restored",
+    "price": 85000,
+    "category": "cars",
+    "blurb": "Unreliable in a way you'll defend at parties.",
+    "image": "mustang.jpg",
+    "imageCredit": {
+      "author": "Sicnag",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:1967_Ford_Mustang_Fastback_(15403550467).jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "range-rover",
+    "code": "04",
+    "name": "Range Rover Autobiography",
+    "price": 110000,
+    "category": "cars",
+    "blurb": "Boxy, smug, and allergic to actual dirt roads.",
+    "image": "range-rover.jpg",
+    "imageCredit": {
+      "author": "Ethan Llamas",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Range_Rover_L460_HSE_Sunset_Gold_01.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -44,45 +102,12 @@
     "price": 132000,
     "category": "cars",
     "blurb": "Two seats, zero excuses, one midlife crisis.",
-    "image": "porsche.png",
-    "imageCredit": null,
-    "priceVerified": "2026-07-27"
-  },
-  {
-    "id": "range-rover",
-    "code": "04",
-    "name": "Range Rover Autobiography",
-    "price": 110000,
-    "category": "cars",
-    "blurb": "Boxy, smug, and allergic to actual dirt roads.",
-    "image": "range-rover.png",
-    "imageCredit": null,
-    "priceVerified": "2026-07-27"
-  },
-  {
-    "id": "mustang",
-    "code": "05",
-    "name": "'67 Mustang, restored",
-    "price": 85000,
-    "category": "cars",
-    "blurb": "Unreliable in a way you'll defend at parties.",
-    "image": "mustang.png",
-    "imageCredit": null,
-    "priceVerified": "2026-07-27"
-  },
-  {
-    "id": "jetski",
-    "code": "0z",
-    "name": "Jet ski",
-    "price": 18000,
-    "category": "cars",
-    "blurb": "The lake will hear you before it sees you.",
-    "image": "jetski.jpg",
+    "image": "porsche.jpg",
     "imageCredit": {
-      "author": "PattayaPatrol",
+      "author": "Alexander Migl",
       "source": "Wikimedia Commons",
       "license": "CC BY-SA 4.0",
-      "url": "https://commons.wikimedia.org/wiki/File:DFC_0467_Rider_in_a_neon_green_helmet_and_life_vest_speeds_across_the_water_on_a_yellow-and-black_jet_ski_marked_with_the_number_58.jpg"
+      "url": "https://commons.wikimedia.org/wiki/File:Porsche_992_Turbo_S_1X7A6046_(cropped).jpg"
     },
     "priceVerified": "2026-07-27"
   },
@@ -93,8 +118,13 @@
     "price": 240000,
     "category": "real-estate",
     "blurb": "The least fun, most freeing purchase on this board.",
-    "image": "starter-home.png",
-    "imageCredit": null,
+    "image": "starter-home.jpg",
+    "imageCredit": {
+      "author": "Andre Carrotflower",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Henry_G._Haussauer_House,_Amherst,_New_York_-_20200703.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -104,8 +134,29 @@
     "price": 310000,
     "category": "real-estate",
     "blurb": "Instant favorite-child status. Permanent.",
-    "image": "parents-mortgage.png",
-    "imageCredit": null,
+    "image": "parents-mortgage.jpg",
+    "imageCredit": {
+      "author": "Larry D. Moore",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Davis_House_Hillsboro_Texas_2019.jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "porter-ranch",
+    "code": "10",
+    "name": "New build, Porter Ranch CA",
+    "price": 1800000,
+    "category": "real-estate",
+    "blurb": "Five bedrooms, three-car garage, zero percent walkable.",
+    "image": "porter-ranch.jpg",
+    "imageCredit": {
+      "author": "inkknife_2000",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:McMansion,_Redlands_3-9-14_(13334471785).jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -115,19 +166,13 @@
     "price": 2800000,
     "category": "real-estate",
     "blurb": "Five bedrooms, one dock, zero cell service.",
-    "image": "tahoe-cabin.png",
-    "imageCredit": null,
-    "priceVerified": "2026-07-27"
-  },
-  {
-    "id": "santa-barbara",
-    "code": "0a",
-    "name": "Beachfront house, Santa Barbara CA",
-    "price": 4200000,
-    "category": "real-estate",
-    "blurb": "Five bedrooms and a permanent salt smell.",
-    "image": "santa-barbara.png",
-    "imageCredit": null,
+    "image": "tahoe-cabin.jpg",
+    "imageCredit": {
+      "author": "inkknife_2000",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:The_Bench,_Lake_Tahoe_8-10_(16219241767).jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -137,8 +182,29 @@
     "price": 6500000,
     "category": "real-estate",
     "blurb": "Five bedrooms, and you ski maybe four days a year.",
-    "image": "aspen-chalet.png",
-    "imageCredit": null,
+    "image": "aspen-chalet.jpg",
+    "imageCredit": {
+      "author": "Henk Monster",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 3.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Panorama_of_the_Holydaypark_Koenigsleiten_with_nice_snow_covered_mountains_-_panoramio.jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "manhattan-beach",
+    "code": "11",
+    "name": "Walk-street house, Manhattan Beach CA",
+    "price": 7000000,
+    "category": "real-estate",
+    "blurb": "Sand section. The bikes cost more than your old car.",
+    "image": "manhattan-beach.jpg",
+    "imageCredit": {
+      "author": "Don Ramey Logan",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 3.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Manhattan_Beach_CA_Glass_Strand_House_photo_Don_Ramey_Logan.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -148,8 +214,13 @@
     "price": 12500000,
     "category": "real-estate",
     "blurb": "Park views, and neighbors who own small countries.",
-    "image": "nyc-penthouse.png",
-    "imageCredit": null,
+    "image": "nyc-penthouse.jpg",
+    "imageCredit": {
+      "author": "Itrytohelp32",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Billionaires%27_Row_2020.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -159,8 +230,13 @@
     "price": 28000000,
     "category": "real-estate",
     "blurb": "Sounds great until the generator dies.",
-    "image": "private-island.png",
-    "imageCredit": null,
+    "image": "private-island.jpg",
+    "imageCredit": {
+      "author": "Abllo",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Mudhdhoo_Island_Aerial.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -234,8 +310,13 @@
     "price": 68000,
     "category": "travel",
     "blurb": "The elephants do not care that you are rich.",
-    "image": "safari.png",
-    "imageCredit": null,
+    "image": "safari.jpg",
+    "imageCredit": {
+      "author": "Diego Delso",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Elefante_africano_de_sabana_(Loxodonta_africana),_delta_del_Okavango,_Botsuana,_2018-07-31,_DD_02.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -261,8 +342,13 @@
     "price": 145000,
     "category": "travel",
     "blurb": "Eleven countries, one very tired passport.",
-    "image": "rtw-trip.png",
-    "imageCredit": null,
+    "image": "rtw-trip.jpg",
+    "imageCredit": {
+      "author": "Travelarz",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:A380_First_Class_Apartment_Etihad_Airways_ITB2015_(5).JPG"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -272,8 +358,13 @@
     "price": 375000,
     "category": "travel",
     "blurb": "Your friend list is about to get interesting.",
-    "image": "superbowl.png",
-    "imageCredit": null,
+    "image": "superbowl.jpg",
+    "imageCredit": {
+      "author": "Quintin3265",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Super_Bowl_LII_Eagles_entrance.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -283,8 +374,13 @@
     "price": 900000,
     "category": "travel",
     "blurb": "Eleven minutes of weightlessness. Bring a playlist.",
-    "image": "blue-origin.png",
-    "imageCredit": null,
+    "image": "blue-origin.jpg",
+    "imageCredit": {
+      "author": "NASA Flight Opportunities",
+      "source": "Wikimedia Commons",
+      "license": "Public domain",
+      "url": "https://commons.wikimedia.org/wiki/File:Blue_Origin_M7.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -294,8 +390,13 @@
     "price": 1200000,
     "category": "travel",
     "blurb": "The crew will be noticeably more competent than you.",
-    "image": "yacht-charter.png",
-    "imageCredit": null,
+    "image": "yacht-charter.jpg",
+    "imageCredit": {
+      "author": "BBB2021",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Luxury_Yacht_in_Saranda,_Albania.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -305,8 +406,13 @@
     "price": 2000000,
     "category": "travel",
     "blurb": "Play the hits. Please just play the hits.",
-    "image": "private-concert.png",
-    "imageCredit": null,
+    "image": "private-concert.jpg",
+    "imageCredit": {
+      "author": "Shixart1985",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:A_large_crowd_enjoys_a_music_concert_illuminated_by_colorful_lights_and_a_stunning_stage_display.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -316,8 +422,13 @@
     "price": 22000,
     "category": "splurges",
     "blurb": "Now you can be disappointed at home.",
-    "image": "espresso.png",
-    "imageCredit": null,
+    "image": "espresso.jpg",
+    "imageCredit": {
+      "author": "Bex Walton",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Beautiful_blue_La_Marzocco_at_Queens_of_Mayfair,_London_(50252545796).jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -343,8 +454,13 @@
     "price": 38000,
     "category": "splurges",
     "blurb": "Tells time. Mostly tells other things.",
-    "image": "rolex.png",
-    "imageCredit": null,
+    "image": "rolex.jpg",
+    "imageCredit": {
+      "author": "Alesili",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 3.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Daytona_16528.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -370,8 +486,13 @@
     "price": 65000,
     "category": "splurges",
     "blurb": "You'll still reach for the same hoodie.",
-    "image": "wardrobe.png",
-    "imageCredit": null,
+    "image": "wardrobe.jpg",
+    "imageCredit": {
+      "author": "^ Missi ^",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Gotta_love_them!!!_(6130067998).jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -381,8 +502,13 @@
     "price": 95000,
     "category": "splurges",
     "blurb": "Fall asleep in 7.1 surround sound.",
-    "image": "home-theater.png",
-    "imageCredit": null,
+    "image": "home-theater.jpg",
+    "imageCredit": {
+      "author": "Geoff Sloan",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Dedicated_home_theater.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -408,8 +534,29 @@
     "price": 145000,
     "category": "splurges",
     "blurb": "The takeout apps remain undeleted.",
-    "image": "chefs-kitchen.png",
-    "imageCredit": null,
+    "image": "chefs-kitchen.jpg",
+    "imageCredit": {
+      "author": "NeONBRAND",
+      "source": "Wikimedia Commons",
+      "license": "CC0",
+      "url": "https://commons.wikimedia.org/wiki/File:Blue_white_kitchen_interior_(Unsplash).jpg"
+    },
+    "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "year-off",
+    "code": "0s",
+    "name": "A full year off work",
+    "price": 55000,
+    "category": "grown-up",
+    "blurb": "Twelve months of median salary, zero meetings.",
+    "image": "year-off.jpg",
+    "imageCredit": {
+      "author": "dronepicr",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:H%C3%A4ngematte_Chillen_Malediven_(29367163651).jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -419,8 +566,13 @@
     "price": 58000,
     "category": "grown-up",
     "blurb": "A weight you only notice once it's gone.",
-    "image": "student-loans.png",
-    "imageCredit": null,
+    "image": "student-loans.jpg",
+    "imageCredit": {
+      "author": "MC1 Chad Runge",
+      "source": "Wikimedia Commons",
+      "license": "Public domain",
+      "url": "https://commons.wikimedia.org/wiki/File:U.S._Naval_Academy_graduates_toss_their_caps_after_the_graduation_and_commissioning_ceremony_in_Annapolis,_Md.,_May_24,_2013_130524-N-OA833-368.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -430,41 +582,45 @@
     "price": 72000,
     "category": "grown-up",
     "blurb": "Boring. Load-bearing.",
-    "image": "emergency-fund.png",
-    "imageCredit": null,
-    "priceVerified": "2026-07-27"
-  },
-  {
-    "id": "year-off",
-    "code": "0s",
-    "name": "A full year off work",
-    "price": 120000,
-    "category": "grown-up",
-    "blurb": "The most expensive thing on this board is time.",
-    "image": "year-off.png",
-    "imageCredit": null,
+    "image": "emergency-fund.jpg",
+    "imageCredit": {
+      "author": "Maklay62",
+      "source": "Wikimedia Commons",
+      "license": "CC0",
+      "url": "https://commons.wikimedia.org/wiki/File:Money-1428594_1920.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
     "id": "college-529",
     "code": "0t",
     "name": "529 college fund, two kids",
-    "price": 400000,
+    "price": 200000,
     "category": "grown-up",
-    "blurb": "Future them says thanks. Present them wants a snack.",
-    "image": "college-529.png",
-    "imageCredit": null,
+    "blurb": "Superfunded now so 18 years of growth pays the tuition. Present them wants a snack.",
+    "image": "college-529.jpg",
+    "imageCredit": {
+      "author": "Nina R from Africa",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Harvard_Yard_in_autumn,_Boston,_Massachusetts,_2015.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
     "id": "retirement-max",
     "code": "0u",
-    "name": "Max out retirement, forever",
+    "name": "Retirement, funded in one move",
     "price": 250000,
     "category": "grown-up",
-    "blurb": "Compounding is the only real magic trick.",
-    "image": "retirement-max.png",
-    "imageCredit": null,
+    "blurb": "One $250k deposit, 30 years of compounding, about $2M at the end. That's the whole trick.",
+    "image": "retirement-max.jpg",
+    "imageCredit": {
+      "author": "Tony Webster from Minneapolis, Minnesota, United States",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Dock_on_Gunflint_Lake_-_Gunflint_Lodge,_Minnesota_(37274033636).jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -474,8 +630,13 @@
     "price": 1000000,
     "category": "grown-up",
     "blurb": "Do nothing for twenty years. Aggressively.",
-    "image": "index-fund.png",
-    "imageCredit": null,
+    "image": "index-fund.jpg",
+    "imageCredit": {
+      "author": "nappa",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Electronic_stock_board_in_Yaesu,_Tokyo_2007.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -485,8 +646,13 @@
     "price": 500000,
     "category": "giving",
     "blurb": "The rare purchase with no buyer’s remorse.",
-    "image": "donate.png",
-    "imageCredit": null,
+    "image": "donate.jpg",
+    "imageCredit": {
+      "author": "Lance Cpl. Tiffany Edwards",
+      "source": "Wikimedia Commons",
+      "license": "Public domain",
+      "url": "https://commons.wikimedia.org/wiki/File:Serving_Country_and_Community,_Marines_fight_every-day_battles_to_change_lives_in_their_locality_131013-M-IU921-926.jpg"
+    },
     "priceVerified": "2026-07-27"
   },
   {
@@ -496,8 +662,13 @@
     "price": 1500000,
     "category": "giving",
     "blurb": "Your name on a building is optional.",
-    "image": "scholarship.png",
-    "imageCredit": null,
+    "image": "scholarship.jpg",
+    "imageCredit": {
+      "author": "COD Newsroom",
+      "source": "Wikimedia Commons",
+      "license": "CC BY 2.0",
+      "url": "https://commons.wikimedia.org/wiki/File:College_of_DuPage_Celebrates_Annual_High_School_Diploma_Ceremony_(54533012249).jpg"
+    },
     "priceVerified": "2026-07-27"
   }
 ]

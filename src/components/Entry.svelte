@@ -1,33 +1,68 @@
 <script lang="ts">
   import { money, clamp } from '../lib/money';
   import { afterTax, effectiveRate } from '../lib/tax';
-  import { sliderToAmount, amountToSlider, MIN_AMOUNT, MAX_AMOUNT, SLIDER_STEPS } from '../lib/slider';
+  import { MAX_AMOUNT } from '../lib/slider';
 
   interface Props {
-    initialAmount?: number;
     onstart: (gross: number, taxed: boolean) => void;
   }
-  let { initialAmount = 12_400_000, onstart }: Props = $props();
+  let { onstart }: Props = $props();
 
-  let gross = $state(initialAmount);
+  /* Starts empty on purpose: the question deserves a real answer, not a
+     pre-filled fantasy. (Live jackpot feeds were investigated and rejected —
+     the lotteries' endpoints are unofficial, CORS-blocked, and this site is
+     static.) */
+  let gross = $state(0);
   let taxed = $state(false);
-  let field = $state(initialAmount.toLocaleString('en-US'));
-  let input = $state<HTMLInputElement | null>(null);
+  let field = $state('');
+  let inputEl: HTMLInputElement | undefined = $state();
 
   const CHIPS = [
-    { amount: 500_000, label: '$500K', note: 'Scratch-off dream' },
-    { amount: 2_000_000, label: '$2M', note: 'Local news story' },
-    { amount: 50_000_000, label: '$50M', note: 'Quit-your-job money' },
-    { amount: 500_000_000, label: '$500M', note: 'Historic jackpot' }
+    { amount: 2_000_000, label: '$2M', note: 'local news story' },
+    { amount: 50_000_000, label: '$50M', note: 'quit-your-job money' },
+    { amount: 500_000_000, label: '$500M', note: 'historic jackpot' }
   ];
 
-  let sliderPos = $derived(amountToSlider(gross || MIN_AMOUNT));
   let net = $derived(afterTax(gross));
   let rate = $derived(effectiveRate(gross));
+
+  /* Keystrokes before hydration land on a dead input; with no pre-filled
+     amount there is nothing to mask that. data-ready lets tests (and anything
+     else) wait for the moment typing actually works. */
+  let ready = $state(false);
+
+  /* Keyboard users land ready to type, like a form that asked a question.
+     Touch devices skip it — popping the keyboard on load is hostile. */
+  $effect(() => {
+    ready = true;
+    if (matchMedia('(pointer: fine)').matches) inputEl?.focus();
+  });
 
   function setAmount(value: number) {
     gross = clamp(Math.round(value), 0, MAX_AMOUNT);
     field = gross ? gross.toLocaleString('en-US') : '';
+  }
+
+  /* Rejecting a keystroke silently reads as "the site is broken". Shake the
+     line and say why, every time, until the message lands. */
+  let nudged = $state(false);
+  let nudgeTimer: ReturnType<typeof setTimeout> | undefined;
+  function nudge() {
+    nudged = false; // drop and re-add the class so the animation restarts
+    requestAnimationFrame(() => (nudged = true));
+    clearTimeout(nudgeTimer);
+    nudgeTimer = setTimeout(() => (nudged = false), 1800);
+  }
+  $effect(() => () => clearTimeout(nudgeTimer));
+
+  /* Typed non-digits never enter the field at all — dollars are whole numbers
+     here, so that includes '.' and ','. Paste is allowed through and sanitised
+     in onInput instead, so "$1,200" pasted from somewhere still lands as 1,200. */
+  function onBeforeInput(e: InputEvent) {
+    if (e.inputType === 'insertText' && e.data && /\D/.test(e.data)) {
+      e.preventDefault();
+      nudge();
+    }
   }
 
   /* Reformat as the user types without the caret jumping to the end. */
@@ -38,6 +73,11 @@
     const parsed = parseFloat(el.value.replace(/[^0-9.]/g, ''));
     gross = clamp(Math.round(Number.isFinite(parsed) ? parsed : 0), 0, MAX_AMOUNT);
     field = gross ? gross.toLocaleString('en-US') : '';
+    /* When sanitising leaves the parsed value unchanged (paste junk into
+       "1,200"), no state changes and Svelte skips the DOM write — sync it by
+       hand or the junk stays visible. */
+    if (/[^0-9,]/.test(el.value)) nudge();
+    if (el.value !== field) el.value = field;
     queueMicrotask(() => {
       const shift = field.length - before;
       try { el.setSelectionRange(caret + shift, caret + shift); } catch {}
@@ -50,33 +90,52 @@
   }
 </script>
 
-<section class="entry">
+<section class="entry" data-ready={ready ? '' : undefined}>
   <div class="inner">
     <p class="kicker">Congratulations, allegedly</p>
-    <h1>So. You <em>won</em>.</h1>
-    <p class="sub">
-      Now the hard part. Money this size doesn't spend itself — it just sits there, judging
-      you. Put in a number and let's get rid of it.
-    </p>
 
-    <label class="vh" for="amount">Jackpot amount in dollars</label>
-    <div class="field">
+    <h1><label for="amount">If I <em>won</em><span class="vh"> — jackpot amount in dollars</span>&hellip;</label></h1>
+
+    <div class="line" class:nudged>
+      <span class="oops" class:show={nudged} role="status">{nudged ? 'Numbers only.' : ''}</span>
       <span class="dollar" aria-hidden="true">$</span>
       <input
         id="amount"
-        bind:this={input}
         type="text"
         inputmode="numeric"
         autocomplete="off"
-        placeholder="0"
+        bind:this={inputEl}
         value={field}
+        onbeforeinput={onBeforeInput}
         oninput={onInput}
+        onfocus={(e) => e.currentTarget.select()}
         onkeydown={(e) => e.key === 'Enter' && start()}
-        aria-describedby="tax-copy"
+        aria-describedby="tax-detail"
       />
     </div>
 
+    <p class="tax" id="tax-detail" aria-live="polite">
+      {#if !gross}
+        Type a number. We'll break the tax news gently.
+      {:else if taxed}
+        Spending the honest <span class="hl">{money(net)}</span> — about
+        <span class="hl">{rate}%</span> of the jackpot never reaches you.
+        <button type="button" class="linkish" onclick={() => (taxed = false)}>Back to the fantasy</button>
+      {:else}
+        That's about <span class="hl">{money(net)}</span> after taxes —
+        <button type="button" class="linkish" onclick={() => (taxed = true)}>spend that instead</button>
+      {/if}
+    </p>
+
+    <div class="go">
+      <button class="btn btn-primary start" type="button" disabled={gross < 1} onclick={start}>
+        Start spending →
+      </button>
+      <span class="hint" aria-hidden="true">or press <kbd>Enter</kbd></span>
+    </div>
+
     <div class="chips" role="group" aria-label="Common jackpot sizes">
+      <span class="chips-label">no idea? try</span>
       {#each CHIPS as chip (chip.amount)}
         <button
           type="button"
@@ -89,50 +148,6 @@
       {/each}
     </div>
 
-    <div class="slider-row">
-      <label for="slider">Or slide</label>
-      <input
-        id="slider"
-        type="range"
-        min="0"
-        max={SLIDER_STEPS}
-        step="1"
-        value={sliderPos}
-        style="--fill:{sliderPos / 10}%"
-        oninput={(e) => setAmount(sliderToAmount(+(e.currentTarget as HTMLInputElement).value))}
-        aria-label="Jackpot amount slider"
-      />
-    </div>
-
-    <div class="tax">
-      <span class="switch">
-        <input type="checkbox" id="tax-toggle" bind:checked={taxed} />
-        <span class="track" aria-hidden="true"></span>
-        <span class="knob" aria-hidden="true"></span>
-      </span>
-      <label class="tax-copy" for="tax-toggle" id="tax-copy">
-        <b>Show the after-tax estimate</b>
-        <span id="tax-detail">
-          {#if !gross}
-            Lottery winnings are taxed as ordinary income — the 24% withheld up front is only
-            a down payment on what you actually owe.
-          {:else if taxed}
-            A <span class="hl">{money(gross)}</span> lump sum lands closer to
-            <span class="hl">{money(net)}</span>. That's about <span class="hl">{rate}%</span>
-            gone to federal income tax plus a typical 5% state cut. Spending the realistic number.
-          {:else}
-            Lottery winnings are taxed as ordinary income. This one would really be worth about
-            <span class="hl">{money(net)}</span> after tax — the 24% withheld up front is only a
-            down payment.
-          {/if}
-        </span>
-      </label>
-    </div>
-
-    <button class="btn btn-primary start" type="button" disabled={gross < 1} onclick={start}>
-      Start spending →
-    </button>
-    <p class="foot">No accounts, no data, no actual money. Obviously.</p>
   </div>
 </section>
 
@@ -160,10 +175,17 @@
     pointer-events: none;
     background-image: radial-gradient(rgba(232, 183, 60, 0.16) 1px, transparent 1.4px);
     background-size: 26px 26px;
-    mask-image: radial-gradient(70% 60% at 50% 40%, #000 0%, transparent 78%);
-    -webkit-mask-image: radial-gradient(70% 60% at 50% 40%, #000 0%, transparent 78%);
+    mask-image: radial-gradient(70% 60% at 42% 40%, #000 0%, transparent 78%);
+    -webkit-mask-image: radial-gradient(70% 60% at 42% 40%, #000 0%, transparent 78%);
   }
-  .inner { position: relative; z-index: 1; width: min(680px, 100%); text-align: center; }
+
+  /* Left-aligned, one question at a time — the whole screen is the form. */
+  .inner {
+    position: relative;
+    z-index: 1;
+    width: min(760px, 100%);
+    text-align: left;
+  }
 
   .kicker {
     font-size: 12px;
@@ -171,48 +193,85 @@
     text-transform: uppercase;
     font-weight: 700;
     color: var(--gold);
-    margin: 0 0 18px;
+    margin: 0 0 20px;
   }
+
   h1 {
     font-family: var(--display);
     font-weight: 900;
-    font-size: clamp(42px, 9vw, 84px);
-    line-height: 0.95;
+    font-size: clamp(44px, 9vw, 88px);
+    line-height: 0.98;
     letter-spacing: -0.035em;
-    margin: 0 0 14px;
+    margin: 0 0 10px;
   }
-  h1 em { font-style: normal; color: var(--gold); }
-  .sub {
-    margin: 0 auto 34px;
-    max-width: 44ch;
-    font-size: clamp(15px, 2.1vw, 18px);
-    line-height: 1.55;
-    color: rgba(246, 239, 223, 0.72);
+  h1 label { cursor: text; }
+  /* The one word that matters gets animated gold foil. */
+  h1 em {
+    font-style: normal;
+    background: var(--foil);
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: foil-shift 5s ease-in-out infinite;
+  }
+  @keyframes foil-shift {
+    0%, 100% { background-position: 0% 0; }
+    50% { background-position: 100% 0; }
   }
 
-  .field {
+  /* The answer line: no box, just an underline that wakes up when you do. */
+  .line {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1.5px solid rgba(232, 183, 60, 0.35);
-    border-radius: var(--r-lg);
-    padding: 14px clamp(14px, 3vw, 26px);
-    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    align-items: baseline;
+    gap: clamp(8px, 1.6vw, 16px);
+    margin-top: clamp(18px, 4vw, 34px);
+    padding-bottom: 10px;
+    border-bottom: 3px solid rgba(232, 183, 60, 0.3);
+    transition: border-color 0.2s ease;
   }
-  .field:focus-within {
-    border-color: var(--gold);
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 0 6px rgba(232, 183, 60, 0.12);
+  .line:focus-within { border-color: var(--gold); }
+  .line:focus-within .dollar { opacity: 1; }
+  .line.nudged { border-color: var(--red); animation: line-shake 0.4s ease; }
+  @keyframes line-shake {
+    0%, 100% { transform: none; }
+    20% { transform: translateX(-7px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(2px); }
+  }
+  .oops {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 10px);
+    padding: 6px 13px;
+    border-radius: 999px;
+    background: rgba(216, 72, 63, 0.14);
+    border: 1px solid rgba(216, 72, 63, 0.5);
+    color: #ffb9b2;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(4px);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .oops.show { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .line.nudged { animation: none; }
   }
   .dollar {
     font-family: var(--display);
     font-weight: 700;
-    font-size: clamp(30px, 7vw, 54px);
+    font-size: clamp(34px, 6.6vw, 62px);
     color: var(--gold);
     line-height: 1;
+    opacity: 0.75;
+    transition: opacity 0.2s ease;
   }
-  .field input {
+  .line input {
     flex: 1;
     min-width: 0;
     width: 100%;
@@ -223,117 +282,116 @@
     font-family: var(--display);
     font-weight: 900;
     font-variant-numeric: tabular-nums;
-    font-size: clamp(30px, 7.4vw, 58px);
+    font-size: clamp(38px, 8vw, 72px);
     line-height: 1.1;
     letter-spacing: -0.03em;
     padding: 0;
-    text-align: left;
+    caret-color: var(--gold);
   }
-  .field input::placeholder { color: rgba(246, 239, 223, 0.28); }
+  .line input::selection { background: rgba(232, 183, 60, 0.35); }
 
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 18px 0 4px; }
-  .chip {
-    border: 1.5px solid rgba(246, 239, 223, 0.22);
-    background: transparent;
-    color: rgba(246, 239, 223, 0.86);
-    border-radius: 999px;
-    padding: 9px 16px;
-    font-size: 14px;
-    font-weight: 600;
+  /* Tax reality as a sentence, not a control panel. */
+  .tax {
+    margin: 14px 0 0;
+    font-size: clamp(14px, 1.9vw, 16.5px);
+    line-height: 1.55;
+    color: rgba(246, 239, 223, 0.62);
+    min-height: 2.6em;
+  }
+  .hl { color: var(--gold); font-weight: 700; }
+  .linkish {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    color: var(--cream-2);
+    text-decoration: underline;
+    text-decoration-color: rgba(232, 183, 60, 0.6);
+    text-underline-offset: 3px;
     cursor: pointer;
-    transition: transform 0.14s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
   }
-  .chip:hover { transform: translateY(-2px); border-color: var(--gold); color: var(--cream-2); }
-  .chip[aria-pressed='true'] { background: var(--gold); border-color: var(--gold); color: var(--green-900); }
-  .chip small {
-    display: block;
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.62;
-    margin-top: 1px;
-  }
-  @media (max-width: 600px) {
-    .chips { display: grid; grid-template-columns: 1fr 1fr; }
-    .chip { padding: 10px 8px; }
+  .linkish:hover { color: var(--gold-hi); text-decoration-color: var(--gold); }
+  .linkish:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+    border-radius: 3px;
   }
 
-  .slider-row { margin: 26px 0 6px; display: flex; align-items: center; gap: 14px; }
-  .slider-row label {
+  .go {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: clamp(24px, 4vw, 36px);
+  }
+  .start { width: min(100%, 300px); }
+  .hint {
+    font-size: 12.5px;
+    color: rgba(246, 239, 223, 0.4);
+    white-space: nowrap;
+  }
+  .hint kbd {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border: 1px solid rgba(246, 239, 223, 0.28);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    color: rgba(246, 239, 223, 0.65);
+  }
+  /* The Enter hint is meaningless where there is no Enter. */
+  @media (hover: none) { .hint { display: none; } }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 22px;
+    margin-top: clamp(30px, 5vw, 46px);
+  }
+  .chips-label {
     font-size: 11px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     font-weight: 700;
-    color: rgba(246, 239, 223, 0.45);
-    white-space: nowrap;
+    color: rgba(246, 239, 223, 0.4);
   }
-  .slider-row input {
-    -webkit-appearance: none;
-    appearance: none;
-    flex: 1;
-    height: 4px;
-    border-radius: 99px;
-    background: linear-gradient(
-      90deg,
-      var(--gold) var(--fill, 20%),
-      rgba(246, 239, 223, 0.18) var(--fill, 20%)
-    );
-    outline: none;
+  .chip {
+    background: none;
+    border: 0;
+    padding: 4px 0;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
     cursor: pointer;
+    font-family: var(--body);
+    color: rgba(246, 239, 223, 0.85);
+    border-bottom: 1.5px dashed rgba(246, 239, 223, 0.25);
+    transition: color 0.15s ease, border-color 0.15s ease;
   }
-  .slider-row input::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: var(--gold);
-    border: 3px solid var(--green-800);
-    cursor: grab;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  .chip:hover { color: var(--cream-2); border-bottom-color: var(--gold); }
+  .chip:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+    border-radius: 3px;
   }
-  .slider-row input::-moz-range-thumb {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: var(--gold);
-    border: 3px solid var(--green-800);
-    cursor: grab;
+  .chip[aria-pressed='true'] {
+    color: var(--gold);
+    border-bottom: 1.5px solid var(--gold);
+  }
+  .chip small {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    opacity: 0.55;
   }
 
-  .tax {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    text-align: left;
-    margin: 24px auto 0;
-    padding: 14px 16px;
-    max-width: 520px;
-    background: rgba(0, 0, 0, 0.16);
-    border: 1px solid rgba(246, 239, 223, 0.1);
-    border-radius: var(--r-md);
-  }
-  .switch { position: relative; flex: none; width: 46px; height: 27px; margin-top: 1px; }
-  .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 2; }
-  .switch .track {
-    position: absolute; inset: 0;
-    border-radius: 99px;
-    background: rgba(246, 239, 223, 0.2);
-    transition: background 0.2s ease;
-  }
-  .switch .knob {
-    position: absolute; top: 3px; left: 3px;
-    width: 21px; height: 21px;
-    border-radius: 50%;
-    background: var(--cream-2);
-    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .switch input:checked ~ .track { background: var(--gold); }
-  .switch input:checked ~ .knob { transform: translateX(19px); }
-  .switch input:focus-visible ~ .track { box-shadow: 0 0 0 4px rgba(232, 183, 60, 0.3); }
 
-  .tax-copy { font-size: 13.5px; line-height: 1.5; color: rgba(246, 239, 223, 0.62); }
-  .tax-copy b { display: block; color: var(--cream-2); font-size: 14.5px; font-weight: 600; margin-bottom: 2px; }
-  .tax-copy :global(.hl), .hl { color: var(--gold); font-weight: 700; }
-
-  .start { margin-top: 28px; width: min(100%, 340px); }
-  .foot { margin: 18px 0 0; font-size: 12.5px; color: rgba(246, 239, 223, 0.34); }
+  @media (max-width: 600px) {
+    .go { flex-direction: column; align-items: stretch; }
+    .start { width: 100%; }
+  }
 </style>

@@ -7,10 +7,17 @@ const items = itemsJson as Item[];
 
 const isMobile = (p: Page) => p.viewportSize()!.width < 700;
 
+/** The entry screen hydrates client-side; typing or clicking before
+ *  data-ready appears lands on dead server-rendered HTML. */
+async function openEntry(page: Page) {
+  await page.goto('/');
+  await expect(page.locator('.entry[data-ready]')).toBeAttached();
+}
+
 async function startGame(page: Page, amount = '12400000') {
   // Pretend the how-to-play tour was already seen — it has its own spec.
   await page.addInitScript(() => localStorage.setItem('lottery.tourSeen', '1'));
-  await page.goto('/');
+  await openEntry(page);
   const field = page.locator('#amount');
   await field.fill('');
   await field.pressSequentially(amount);
@@ -20,34 +27,64 @@ async function startGame(page: Page, amount = '12400000') {
 
 test.describe('entry', () => {
   test('formats the amount as you type', async ({ page }) => {
-    await page.goto('/');
+    await openEntry(page);
     const field = page.locator('#amount');
     await field.fill('');
     await field.pressSequentially('7500000');
     await expect(field).toHaveValue('7,500,000');
   });
 
+  test('letters never appear in the amount, typed or pasted', async ({ page, context, browserName }) => {
+    await openEntry(page);
+    const field = page.locator('#amount');
+    await field.pressSequentially('12abc00');
+    await expect(field).toHaveValue('1,200');
+    await field.pressSequentially('x');
+    await expect(field).toHaveValue('1,200');
+    // Rejected keystrokes get visible guidance, not silence.
+    await expect(page.locator('.entry [role="status"]')).toContainText(/numbers only/i);
+
+    // Paste is sanitised rather than blocked.
+    test.skip(browserName !== 'chromium', 'clipboard permission is chromium-only here');
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.evaluate(() => navigator.clipboard.writeText('$1,200,000 approx'));
+    await field.fill('');
+    await field.press('ControlOrMeta+v');
+    await expect(field).toHaveValue('1,200,000');
+
+    // Junk that parses to the number already in the field must not linger
+    // in the DOM either — state doesn't change, so the input syncs by hand.
+    await page.evaluate(() => navigator.clipboard.writeText('total: $1,200,000!!'));
+    await field.press('ControlOrMeta+a');
+    await field.press('ControlOrMeta+v');
+    await expect(field).toHaveValue('1,200,000');
+  });
+
   test('quick-select chips set the amount', async ({ page }) => {
-    await page.goto('/');
+    await openEntry(page);
     const chip = page.getByRole('button', { name: /\$2M/ });
     await chip.click();
     await expect(page.locator('#amount')).toHaveValue('2,000,000');
     await expect(chip).toHaveAttribute('aria-pressed', 'true');
   });
 
-  test('after-tax toggle rewrites the explanation', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('#tax-detail')).toContainText('would really be worth');
-    await page.locator('#tax-toggle').check();
-    await expect(page.locator('#tax-detail')).toContainText('lands closer to');
+  test('after-tax line swaps between fantasy and honest numbers', async ({ page }) => {
+    await openEntry(page);
+    await expect(page.locator('#tax-detail')).toContainText('Type a number');
+    await page.getByRole('button', { name: /\$2M/ }).click();
+    await expect(page.locator('#tax-detail')).toContainText('after taxes');
+    await page.getByRole('button', { name: /spend that instead/i }).click();
+    await expect(page.locator('#tax-detail')).toContainText('Spending the honest');
     await expect(page.locator('#tax-detail')).toContainText('%');
+    await page.getByRole('button', { name: /back to the fantasy/i }).click();
+    await expect(page.locator('#tax-detail')).toContainText('after taxes');
   });
 
   test('after-tax mode reduces the spendable total', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('lottery.tourSeen', '1'));
-    await page.goto('/');
+    await openEntry(page);
     await page.getByRole('button', { name: /\$2M/ }).click();
-    await page.locator('#tax-toggle').check();
+    await page.getByRole('button', { name: /spend that instead/i }).click();
     await page.getByRole('button', { name: /start spending/i }).click();
     const total = await page.locator('.stat').first().locator('dd').textContent();
     const value = Number(total!.replace(/[^0-9]/g, ''));
@@ -56,7 +93,7 @@ test.describe('entry', () => {
   });
 
   test('start is disabled at zero', async ({ page }) => {
-    await page.goto('/');
+    await openEntry(page);
     await page.locator('#amount').fill('');
     await expect(page.getByRole('button', { name: /start spending/i })).toBeDisabled();
   });
@@ -65,7 +102,7 @@ test.describe('entry', () => {
 test.describe('board', () => {
   test('renders every item with a real optimised image', async ({ page }) => {
     await startGame(page);
-    await expect(page.locator('.card')).toHaveCount(41);
+    await expect(page.locator('.card')).toHaveCount(42);
     await expect(page.locator('[role="tab"]')).toHaveCount(6);
 
     // AVIF first, WebP fallback, responsive candidates on both.
@@ -100,7 +137,7 @@ test.describe('board', () => {
 
   test('required items from the brief are present', async ({ page }) => {
     await startGame(page);
-    for (const id of ['camry', 'lexus-rx', 'range-rover', 'santa-barbara', 'tahoe-cabin', 'aspen-chalet']) {
+    for (const id of ['camry', 'lexus-rx', 'range-rover', 'manhattan-beach', 'tahoe-cabin', 'aspen-chalet']) {
       await expect(page.locator(`.card[data-id="${id}"]`)).toHaveCount(1);
     }
   });

@@ -76,11 +76,16 @@ instead of breaking.
 
 ## Images
 
-The artwork currently in `src/assets/items/` is **generated placeholder art** — see
-`scripts/build-item-art.mjs`. The pipeline around it is real and is what you'd keep.
+The artwork in `src/assets/items/` is real photography, sourced from openly licensed
+images (Wikimedia Commons — public domain, CC0, CC BY, or CC BY-SA). Each item's
+`imageCredit` in `items.json` records the author, source, exact license, and file page
+URL. CC BY / CC BY-SA require attribution, so keep those credits intact — and if an
+image is ever replaced with a non-CC one, clear the credit. (`scripts/build-item-art.mjs`
+still exists to generate placeholder plates for new items that don't have a photo yet;
+it never overwrites existing files.)
 
-**To use real photography:** drop `<id>.jpg` into `src/assets/items/`, delete the old
-`<id>.png`, point the item's `image` at the new filename, then:
+**To swap in a new photo:** drop `<id>.jpg` into `src/assets/items/`, delete the old
+file, point the item's `image` at the new filename, update `imageCredit`, then:
 
 ```bash
 npm run verify:images
