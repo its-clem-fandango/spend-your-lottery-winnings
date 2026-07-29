@@ -27,8 +27,12 @@
   let credited = $derived(items.filter((i) => i.imageCredit));
 
   let active = $state(categories[0]?.slug ?? '');
-  let sections: Record<string, HTMLElement> = {};
-  const cards: Record<string, ItemCard> = {};
+  /* Reactive because the scroll spy below reads them: bind:this fills these in
+     after the effect has already run, and a plain object gives it nothing to
+     re-run on, so the observer would watch the empty set it was born with.
+     Svelte warns about exactly this (binding_property_non_reactive). */
+  let sections = $state<Record<string, HTMLElement>>({});
+  let cards = $state<Record<string, ItemCard>>({});
 
   /** Replays the add animation on a specific card. */
   export function popCard(id: string) {
@@ -171,6 +175,9 @@
     border: 1.5px solid var(--line);
     background: transparent;
     border-radius: 999px;
+    /* 43px tall was a pixel under the 44 a thumb is entitled to, and these are
+       the first thing a phone scrolls through. */
+    min-height: 44px;
     padding: 9px 17px;
     font-size: 15.5px;
     font-weight: 600;

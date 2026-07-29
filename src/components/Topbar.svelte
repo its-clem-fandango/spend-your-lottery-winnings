@@ -291,6 +291,20 @@
     transition: color 0.15s ease, border-color 0.15s ease;
   }
   .edit-winnings:hover { color: var(--gold); border-bottom-color: var(--gold); }
+  /* On a phone the winnings figure shrinks to ~19px, which left the only
+     control in the stats row 22px tall. The dd clips its overflow for the
+     ellipsis below, so a pseudo-element reaching outside it would be clipped
+     for hit-testing too — the box itself has to grow. 24px is the floor a
+     pointer target is owed (WCAG 2.5.8); a full 44 would mean a taller topbar
+     on the screen that can least afford one, and the same dialog is a tap away
+     on the cart's total. */
+  @media (max-width: 799px) {
+    .edit-winnings {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+    }
+  }
   /* Inset, because the dd it sits in now clips its overflow and an outset ring
      would be the first thing cut off. */
   .edit-winnings:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 3px; }
