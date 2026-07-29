@@ -12,9 +12,9 @@ import { defineConfig, devices } from '@playwright/test';
 const executablePath = process.env.CHROMIUM_PATH || undefined;
 const launchOptions = executablePath ? { executablePath } : {};
 
-/** E2E_PORT dodges a clash when another dev server already owns 4321 —
- *  `reuseExistingServer` would otherwise silently test the wrong app. */
-const port = Number(process.env.E2E_PORT) || 4321;
+/** 4321 is Astro's default, so every other local Astro project claims it
+ *  first. Pick a port we own; E2E_PORT still overrides it. */
+const port = Number(process.env.E2E_PORT) || 4331;
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -33,7 +33,10 @@ export default defineConfig({
   webServer: {
     command: `npm run build && npx astro preview --port ${port}`,
     url: `http://localhost:${port}`,
-    reuseExistingServer: !process.env.CI,
+    // Reuse would skip the build above, so the suite could silently run
+    // against old code — or against another project squatting the port,
+    // which fails as "the element is missing" rather than "wrong app".
+    reuseExistingServer: false,
     timeout: 240_000
   }
 });

@@ -203,21 +203,57 @@
     display: flex;
     align-items: center;
     gap: clamp(10px, 3vw, 32px);
+    flex-wrap: wrap;
   }
   .brand {
     font-family: var(--display);
     font-weight: 900;
-    font-size: 19px;
+    font-size: clamp(14px, 3.4vw, 19px);
     letter-spacing: -0.02em;
     line-height: 1.1;
     flex: none;
-    max-width: 145px;
+    /* Wide enough to hold "Lottery Winnings" on the one line the <br> intends,
+       and still leaves the help and cart buttons their room at 320px. */
+    max-width: clamp(126px, 26vw, 145px);
     display: none;
   }
   .brand span { color: var(--gold); }
-  @media (min-width: 900px) { .brand { display: block; } }
 
-  .stats { display: flex; flex: 1; gap: clamp(10px, 3.4vw, 36px); min-width: 0; margin: 0; }
+  /* Shown where there's room for it, which is not a straight line. On a phone
+     the stats have a row to themselves (below) and the brand shares the top one
+     with the buttons. Between 800px and 1100px everything is back on one line
+     and the three figures need every pixel of it, so the brand yields — it's
+     the only thing here that isn't load-bearing. */
+  @media (max-width: 799px), (min-width: 1100px) {
+    .brand { display: block; }
+  }
+
+  /* Wraps before it shrinks. Flex shares a shortfall out in proportion to size,
+     so without this a trillion-dollar jackpot takes the row over the edge and
+     "$28,000" loses its tail alongside it — a figure that had room to spare.
+     Dropping a whole stat to the next line keeps every number intact instead. */
+  .stats {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: 4px clamp(8px, 3.4vw, 36px);
+    min-width: 0;
+    margin: 0;
+  }
+
+  /* Three currency figures plus the help and cart buttons do not fit on one
+     phone-width line: at 412px the numbers alone want 312px of the ~210px they
+     were getting, and min-width:0 let them shrink past their own text and print
+     over each other. Their own row is the only place they fit at full precision.
+     Ordered after the buttons rather than moved in the markup, so the tab order
+     on a desktop single line still runs left to right. */
+  @media (max-width: 799px) {
+    .stats {
+      order: 1;
+      flex-basis: 100%;
+      justify-content: space-between;
+    }
+  }
   .stat { min-width: 0; }
   .stat dt {
     font-size: 12px;
@@ -228,7 +264,19 @@
     margin: 0 0 3px;
     white-space: nowrap;
   }
-  .stat dd { margin: 0; font-size: clamp(19px, 4.4vw, 30px); line-height: 1.1; white-space: nowrap; }
+  /* Truncation rather than overlap as the last resort. MAX_AMOUNT is
+     $1,000,000,000,000 — eighteen characters — and no amount of sizing fits
+     three of those on a 320px phone, so the one that can't have the room loses
+     its tail instead of printing over its neighbour. The exact figure is a tap
+     away in the winnings dialog and the cart. */
+  .stat dd {
+    margin: 0;
+    font-size: clamp(16px, 4.9vw, 30px);
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   /* Reads as the number it replaces, with just enough of a hint to be findable. */
   .edit-winnings {
@@ -243,7 +291,9 @@
     transition: color 0.15s ease, border-color 0.15s ease;
   }
   .edit-winnings:hover { color: var(--gold); border-bottom-color: var(--gold); }
-  .edit-winnings:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 3px; }
+  /* Inset, because the dd it sits in now clips its overflow and an outset ring
+     would be the first thing cut off. */
+  .edit-winnings:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 3px; }
   /* The number that matters gets the foil treatment. */
   .stat.remaining dd {
     background: var(--foil);

@@ -17,7 +17,7 @@
     indexItems, spent as spentOf, remaining as remainingOf,
     itemCount, addItem, removeItem, clearCart, isStuck, ranked
   } from '../lib/cart';
-  import type { Category, GameState, Item, ItemImage } from '../lib/types';
+  import type { Cart, Category, GameState, Item, ItemImage } from '../lib/types';
 
   interface Props {
     items: Item[];
@@ -63,6 +63,34 @@
 
   let refuseTimer: ReturnType<typeof setTimeout> | undefined;
   let flashTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /**
+   * Clearing doesn't ask first. It empties the cart on the first press and then
+   * offers to take it back, which is the same protection as a confirmation
+   * without making everyone who meant it answer a question. The snapshot is the
+   * whole cart, so undo restores the order too and not just the quantities.
+   *
+   * Owned here rather than by the three buttons that trigger it: two of them
+   * (the drawer and the winnings dialog) can be closed by the time the window
+   * lapses, and the offer has to outlive them.
+   */
+  const UNDO_MS = 6000;
+  let undone = $state<{ cart: Cart; order: string[] } | null>(null);
+  let undoCount = $state(0); // kept past the dismissal so the toast can animate out
+  let undoBtn = $state<HTMLButtonElement | null>(null);
+  let undoTimer: ReturnType<typeof setTimeout> | undefined;
+  let undoLine = $derived(
+    `Cart cleared. ${undoCount} ${undoCount === 1 ? 'thing' : 'things'} back on the shelf.`
+  );
+
+  /* Focus lands on Undo because the button that was just pressed unmounts with
+     the cart it emptied — without this the keyboard is left on <body> and the
+     one control that undoes the damage is a full tab cycle away. */
+  $effect(() => {
+    if (undone) undoBtn?.focus();
+  });
+
+  $effect(() => () => clearTimeout(undoTimer));
 
   /**
    * One restore, once, and only from a shared link. Refresh is deliberately
@@ -118,6 +146,10 @@
     cartOpen = false;
     winningsOpen = false;
     summaryReturn = null; // the button it points at is about to be unmounted
+    // Straight to null, not dismissUndo(): there's nothing left to hand focus
+    // back to, and there's no cart worth restoring into.
+    clearTimeout(undoTimer);
+    undone = null;
     started = false;
     state = { gross: 0, taxed: false, total: 0, cart: {}, order: [] };
     history.replaceState(null, '', window.location.pathname);
@@ -139,7 +171,33 @@
   }
 
   function clear() {
+    if (!count) return;
+    undone = { cart: state.cart, order: state.order };
+    undoCount = count;
     state = clearCart(state);
+    armUndo();
+  }
+
+  function undo() {
+    if (!undone) return;
+    state = { ...state, cart: undone.cart, order: undone.order };
+    dismissUndo();
+  }
+
+  /** Restarted on blur too, so the window is time you actually had it in front
+      of you rather than time that ran out while the button held focus. */
+  function armUndo() {
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(dismissUndo, UNDO_MS);
+  }
+
+  function dismissUndo() {
+    clearTimeout(undoTimer);
+    if (!undone) return;
+    // Hand focus back before the button goes, to the one anchor that's present
+    // and reachable in all three of the places clearing is offered from.
+    if (undoBtn && document.activeElement === undoBtn) topbar?.cartElement()?.focus();
+    undone = null;
   }
 
   function add(id: string, el?: HTMLElement) {
@@ -148,6 +206,9 @@
       refuse();
       return;
     }
+    // The snapshot is of a cart that no longer exists once you've started
+    // rebuilding, and restoring it would quietly delete what you just added.
+    dismissUndo();
     state = result.state;
     board?.popCard(id);
     topbar?.bump();
@@ -155,6 +216,7 @@
   }
 
   function remove(id: string) {
+    dismissUndo();
     state = removeItem(state, id);
   }
 
@@ -322,6 +384,28 @@
   />
 
   <Tour open={tourOpen} onclose={() => (tourOpen = false)} />
+
+  <!-- Outside .game, and last, so it sits over the drawer it's usually launched
+       from. inert (not just hidden) while it's away, or Undo would stay in the
+       tab order pointing at a cart nobody cleared. -->
+  <div class="undo" class:on={!!undone} inert={!undone}>
+    <p aria-hidden="true">{undoLine}</p>
+    <button
+      class="btn take-back"
+      type="button"
+      bind:this={undoBtn}
+      aria-label="Undo clearing the cart"
+      onfocus={() => clearTimeout(undoTimer)}
+      onblur={armUndo}
+      onclick={undo}
+    >
+      Undo
+    </button>
+  </div>
+
+  <!-- Announced from out here rather than off the toast itself, which is inert
+       between clears and so isn't in the accessibility tree to speak up from. -->
+  <span class="vh" role="status">{undone ? undoLine : ''}</span>
 {/if}
 
 <style>
@@ -365,4 +449,36 @@
   .nudge.on { transform: translate(-50%, 0); }
   .nudge p { margin: 0; font-size: 16px; line-height: 1.35; }
   .go { background: var(--gold); color: var(--green-900); padding: 10px 18px; font-size: 15.5px; flex: none; }
+
+  /* Same seat as the nudge, which is free by definition: the nudge only appears
+     with something in the cart, and this only appears with nothing in it. */
+  .undo {
+    position: fixed;
+    left: 50%;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    transform: translate(-50%, 140%);
+    z-index: 75;
+    background: var(--green-800);
+    color: var(--cream-2);
+    border: 1px solid rgba(232, 183, 60, 0.55);
+    border-radius: 999px;
+    padding: 11px 12px 11px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+    max-width: calc(100vw - 24px);
+  }
+  .undo.on { transform: translate(-50%, 0); }
+  .undo p { margin: 0; font-size: 16px; line-height: 1.35; }
+  .take-back {
+    background: var(--gold);
+    color: var(--green-900);
+    padding: 10px 20px;
+    font-size: 15.5px;
+    font-weight: 900;
+    flex: none;
+  }
+  .take-back:focus-visible { outline: 2px solid var(--cream-2); outline-offset: 3px; }
 </style>

@@ -1,7 +1,6 @@
 <script lang="ts">
   import AmountField from './AmountField.svelte';
   import { money } from '../lib/money';
-  import { twoStep } from '../lib/confirm.svelte';
   import { spendable, effectiveRate } from '../lib/tax';
 
   interface Props {
@@ -29,19 +28,12 @@
       returnTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       draftGross = gross;
       draftTaxed = taxed;
-      confirmClear.disarm();
       field?.focus();
     } else if (returnTo) {
       returnTo.focus();
       returnTo = null;
     }
   });
-
-  /* Same two-step as everywhere else — this one sits right next to the
-     start-over link, so a mis-tap needs to be hard. */
-  const confirmClear = twoStep(() => onclear());
-
-  $effect(() => () => confirmClear.disarm());
 
   let total = $derived(spendable(draftGross, draftTaxed));
   let rate = $derived(effectiveRate(draftGross));
@@ -107,10 +99,8 @@
            and nothing does. -->
       <div class="tertiary">
         {#if count > 0}
-          <button class="linkish wipe" type="button" class:armed={confirmClear.armed} onclick={confirmClear.press}>
-            {confirmClear.armed
-              ? `Press again to clear ${count} item${count === 1 ? '' : 's'}`
-              : 'Clear the cart, keep the winnings'}
+          <button class="linkish wipe" type="button" onclick={onclear}>
+            Clear the cart, keep the winnings
           </button>
         {/if}
         <button class="linkish restart" type="button" onclick={onrestart}>Start over from scratch</button>
@@ -247,7 +237,6 @@
     transition: color 0.15s ease;
   }
   .wipe:hover { color: var(--gold-hi); }
-  .wipe.armed { color: #ff9b93; text-decoration-color: #ff9b93; }
   .wipe:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 3px; }
 
   .restart {

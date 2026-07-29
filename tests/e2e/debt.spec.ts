@@ -194,8 +194,10 @@ test.describe('going into the red', () => {
   });
 });
 
+const toast = (page: Page) => page.locator('.undo.on');
+
 test.describe('clearing the cart', () => {
-  test('takes two presses and then empties everything', async ({ page }) => {
+  test('empties everything on one press', async ({ page }) => {
     await startGame(page);
     await page.locator('.card[data-id="camry"] .hit').click();
     await page.locator('.card[data-id="rolex"] .hit').click();
@@ -204,25 +206,80 @@ test.describe('clearing the cart', () => {
     // Scoped: the end of the board offers a "Clear cart" too.
     const drawer = page.locator('.drawer');
     await drawer.getByRole('button', { name: /^clear cart$/i }).click();
-    await expect(drawer.getByRole('button', { name: /^press again$/i })).toBeVisible();
-    await drawer.getByRole('button', { name: /^press again$/i }).click();
 
     await expect(page.locator('.drawer .empty')).toBeVisible();
     await expect(page.locator('.stat').nth(1).locator('dd')).toHaveText('$0');
     // The badge is always in the DOM, just scaled away — so check the count.
     await expect(page.locator('.card[data-id="camry"] .qty')).toHaveText('0');
     await expect(page.locator('.card[data-id="camry"]')).not.toHaveClass(/owned/);
+    await expect(toast(page)).toContainText(/2 things back on the shelf/i);
   });
 
-  test('disarms itself if you walk away', async ({ page }) => {
+  test('undo puts the cart back exactly as it was', async ({ page }) => {
     await startGame(page);
     await page.locator('.card[data-id="camry"] .hit').click();
+    await page.locator('.card[data-id="camry"] .hit').click();
+    await page.locator('.card[data-id="rolex"] .hit').click();
     await page.getByRole('button', { name: /^Cart/ }).click();
 
     const drawer = page.locator('.drawer');
+    const spentBefore = await page.locator('.stat').nth(1).locator('dd').textContent();
     await drawer.getByRole('button', { name: /^clear cart$/i }).click();
-    await expect(drawer.getByRole('button', { name: /^press again$/i })).toBeVisible();
-    await expect(drawer.getByRole('button', { name: /^clear cart$/i })).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('.stat').nth(1).locator('dd')).toHaveText('$0');
+
+    await page.getByRole('button', { name: /^undo/i }).click();
+
+    await expect(page.locator('.stat').nth(1).locator('dd')).toHaveText(spentBefore!);
+    await expect(page.locator('.card[data-id="camry"] .qty')).toHaveText('2');
+    await expect(page.locator('.card[data-id="rolex"] .qty')).toHaveText('1');
+    // Order survives the round trip, so the drawer reads the same as before.
+    await expect(drawer.locator('.row .main strong').first()).toContainText(/camry/i);
+    await expect(toast(page)).toHaveCount(0);
+  });
+
+  /* The offer is the whole safety net now, so it has to land on the one control
+     that takes the clear back rather than on <body>. */
+  test('undo takes focus and can be pressed with the keyboard', async ({ page }) => {
+    await startGame(page);
+    await page.locator('.card[data-id="camry"] .hit').click();
+
+    const end = page.locator('.end');
+    await end.scrollIntoViewIfNeeded();
+    await end.getByRole('button', { name: /^clear cart$/i }).click();
+
+    await expect(page.getByRole('button', { name: /^undo/i })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.card[data-id="camry"] .qty')).toHaveText('1');
+  });
+
+  test('the offer lapses on its own and leaves the cart empty', async ({ page }) => {
+    await startGame(page);
+    await page.locator('.card[data-id="camry"] .hit').click();
+    await page.getByRole('button', { name: /^Cart/ }).click();
+    await page.locator('.drawer').getByRole('button', { name: /^clear cart$/i }).click();
+
+    await expect(toast(page)).toBeVisible();
+    // Focus holds the window open, so hand it somewhere else first.
+    await page.locator('.drawer').getByRole('button', { name: /close cart/i }).focus();
+    await expect(toast(page)).toHaveCount(0, { timeout: 10_000 });
+    await expect(page.locator('.stat').nth(1).locator('dd')).toHaveText('$0');
+  });
+
+  /* Undo restores a whole cart, so it can't stay on offer once you've started
+     building a different one — restoring would silently delete the new items. */
+  test('buying something again withdraws the offer', async ({ page }) => {
+    await startGame(page);
+    await page.locator('.card[data-id="camry"] .hit').click();
+    await page.getByRole('button', { name: /^Cart/ }).click();
+    await page.locator('.drawer').getByRole('button', { name: /^clear cart$/i }).click();
+    await expect(toast(page)).toBeVisible();
+
+    await page.getByRole('button', { name: /close cart/i }).click();
+    await page.locator('.card[data-id="rolex"] .hit').click();
+
+    await expect(toast(page)).toHaveCount(0);
+    await expect(page.locator('.card[data-id="rolex"] .qty')).toHaveText('1');
+    await expect(page.locator('.card[data-id="camry"] .qty')).toHaveText('0');
   });
 
   test('is not offered anywhere when there is nothing to clear', async ({ page }) => {
@@ -245,7 +302,6 @@ test.describe('clearing the cart', () => {
     await expect(end).toContainText(/2 things in the cart/i);
 
     await end.getByRole('button', { name: /^clear cart$/i }).click();
-    await end.getByRole('button', { name: /press again to clear 2/i }).click();
 
     await expect(page.locator('.stat').nth(1).locator('dd')).toHaveText('$0');
     await expect(page.locator('.stat').first().locator('dd')).toHaveText('$12,400,000');
@@ -268,8 +324,6 @@ test.describe('clearing the cart', () => {
 
     await page.locator('.stat').first().getByRole('button').click();
     await page.getByRole('button', { name: /clear the cart, keep the winnings/i }).click();
-    await expect(page.getByRole('button', { name: /press again to clear 2 items/i })).toBeVisible();
-    await page.getByRole('button', { name: /press again to clear 2 items/i }).click();
 
     await expect(page.locator('#winnings-amount')).toHaveCount(0);
     await expect(page.locator('.stat').first().locator('dd')).toHaveText('$12,400,000');
@@ -292,7 +346,6 @@ test.describe('clearing the cart', () => {
 
     await page.locator('.stat').first().getByRole('button').click();
     await page.getByRole('button', { name: /clear the cart, keep the winnings/i }).click();
-    await page.getByRole('button', { name: /press again to clear 1 item/i }).click();
 
     await expect(banner(page)).toBeEmpty(); // the region stays, the text goes
     await expect(page.locator('.stat.remaining dd')).toHaveText('$100,000');

@@ -1,7 +1,6 @@
 <script lang="ts">
   import ItemCard from './ItemCard.svelte';
   import { money } from '../lib/money';
-  import { twoStep } from '../lib/confirm.svelte';
   import type { Category, Item, ItemImage, Cart } from '../lib/types';
 
   interface Props {
@@ -22,18 +21,10 @@
     onadd, onremove, onclear, ondone
   }: Props = $props();
 
-  const confirmClear = twoStep(() => onclear());
-
   /* CC BY and CC BY-SA oblige us to name the photographer. Storing the credit
      in items.json isn't crediting anyone — it has to be somewhere a person can
      actually read, and the end of the board is the only end this page has. */
   let credited = $derived(items.filter((i) => i.imageCredit));
-
-  $effect(() => {
-    if (!count) confirmClear.disarm();
-  });
-
-  $effect(() => () => confirmClear.disarm());
 
   let active = $state(categories[0]?.slug ?? '');
   let sections: Record<string, HTMLElement> = {};
@@ -127,19 +118,9 @@
         {count} {count === 1 ? 'thing' : 'things'} in the cart, {money(spent)} gone.
       </p>
       <div class="end-actions">
-        <button
-          class="btn end-clear"
-          type="button"
-          class:armed={confirmClear.armed}
-          onclick={confirmClear.press}
-        >
-          {confirmClear.armed ? `Press again to clear ${count}` : 'Clear cart'}
-        </button>
+        <button class="btn end-clear" type="button" onclick={onclear}>Clear cart</button>
         <button class="btn end-done" type="button" onclick={ondone}>See the damage</button>
       </div>
-      <span class="vh" role="status">
-        {confirmClear.armed ? 'Press the clear button again to empty your cart.' : ''}
-      </span>
       <p class="end-note">Clearing empties the cart. Your winnings stay put.</p>
     {:else}
       <p class="end-line">
@@ -241,7 +222,6 @@
     font-weight: 700;
   }
   .end-clear:hover { background: rgba(216, 72, 63, 0.09); border-color: var(--red); }
-  .end-clear.armed { background: var(--red); color: var(--cream-2); border-color: var(--red); }
   .end-clear:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
   .end-done {
     background: var(--foil-btn);
