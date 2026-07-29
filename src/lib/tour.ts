@@ -16,19 +16,19 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'stats',
     title: "Here's your fortune",
-    body: "Winnings is what you won. Spent is what you've blown. Remaining is what's left — watch it shrink.",
+    body: "Winnings is what you won. Spent is what you've blown. Remaining is what's left. Watch it shrink.",
     selectors: ['[data-tour="stats"]'],
   },
   {
     id: 'buy',
     title: 'Tap anything to buy it',
-    body: "See something you like? Tap it once — it's yours. Tap it again to buy two. Nobody's judging.",
+    body: "See something you like? Tap it once and it's yours. Tap it again to buy two. Nobody's judging.",
     selectors: ['.card:not(.unaffordable)', '.card'],
   },
   {
     id: 'cart',
     title: 'The cart keeps score',
-    body: "Everything you buy lands here. When the money's gone — or you're bored — open the cart and hit 'I'm done spending' to see the damage.",
+    body: "Everything you buy lands here. When the money's gone, or you're bored, open the cart and hit 'I'm done spending' to see the damage.",
     selectors: ['[data-tour="cart"]'],
   },
 ];

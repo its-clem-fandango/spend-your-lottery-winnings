@@ -153,7 +153,7 @@
           <button class="btn btn-ghost back" type="button" onclick={back}>Back</button>
         {/if}
         <button class="btn btn-primary next" type="button" bind:this={nextBtn} onclick={next}>
-          {last ? "Got it — let's spend" : 'Next'}
+          {last ? "Got it, let's spend" : 'Next'}
         </button>
       </div>
       <button class="btn btn-ghost skip" type="button" onclick={onclose}>Skip the tour</button>

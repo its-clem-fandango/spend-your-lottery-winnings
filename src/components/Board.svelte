@@ -154,7 +154,7 @@
         <ul>
           {#each credited as item (item.id)}
             <li>
-              <span>{item.name}</span> —
+              <span>{item.name}</span>:
               <a href={item.imageCredit!.url} target="_blank" rel="noopener noreferrer"
                 >{item.imageCredit!.author}</a
               >, <em>{item.imageCredit!.license}</em>

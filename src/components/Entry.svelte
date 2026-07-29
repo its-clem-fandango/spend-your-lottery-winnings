@@ -69,12 +69,12 @@
       {#if !gross}
         Type a number. We'll break the tax news gently.
       {:else if taxed}
-        Spending the honest <span class="hl">{money(net)}</span> — about
+        Spending the honest <span class="hl">{money(net)}</span>. About
         <span class="hl">{rate}%</span> of the jackpot never reaches you.
         <button type="button" class="linkish" onclick={() => (taxed = false)}>Back to the fantasy</button>
       {:else}
-        That's about <span class="hl">{money(net)}</span> after taxes —
-        <button type="button" class="linkish" onclick={() => (taxed = true)}>spend that instead</button>
+        That's about <span class="hl">{money(net)}</span> after taxes.
+        <button type="button" class="linkish" onclick={() => (taxed = true)}>Spend that instead</button>
       {/if}
     </p>
 

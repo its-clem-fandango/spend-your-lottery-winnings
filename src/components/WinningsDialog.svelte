@@ -73,12 +73,12 @@
 
       <p class="detail" id="winnings-detail" aria-live="polite">
         {#if draftGross < 1}
-          Type a number — your cart stays exactly where it is.
+          Type a number. Your cart stays exactly where it is.
         {:else if deficit > 0}
           You've already spent <span class="hl">{money(spent)}</span>. That puts you
-          <span class="bad">{money(deficit)} in the hole</span> — which is allowed, if you insist.
+          <span class="bad">{money(deficit)} in the hole</span>, which is allowed, if you insist.
         {:else}
-          Spending <span class="hl">{money(total)}</span>{draftTaxed ? ` — about ${rate}% never reaches you.` : '.'}
+          Spending <span class="hl">{money(total)}</span>{draftTaxed ? `. About ${rate}% never reaches you.` : '.'}
           Your cart is untouched.
         {/if}
       </p>

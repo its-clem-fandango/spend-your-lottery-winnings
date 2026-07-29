@@ -96,7 +96,7 @@
 
   $effect(() => {
     document.title = started
-      ? `Spending ${shortMoney(state.total)} — Spend Your Lottery Winnings`
+      ? `Spending ${shortMoney(state.total)} | Spend Your Lottery Winnings`
       : 'Spend Your Lottery Winnings';
   });
 

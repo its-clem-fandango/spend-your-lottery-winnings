@@ -13,21 +13,21 @@ npm run test:e2e   # end-to-end against the production build
 
 ## Deploy
 
-**Vercel** — import the repo, accept the detected Astro preset. `vercel.json` already
+**Vercel:** import the repo, accept the detected Astro preset. `vercel.json` already
 sets immutable caching on hashed assets. No adapter and no runtime: the build emits a
 plain directory.
 
-**Anywhere else** — `npm run build` and serve `dist/`. For GitHub Pages set
+**Anywhere else:** `npm run build` and serve `dist/`. For GitHub Pages set
 `base: '/<repo>'` in `astro.config.mjs`.
 
-Set `site` in `astro.config.mjs` to your real domain before shipping — canonical and
+Set `site` in `astro.config.mjs` to your real domain before shipping. Canonical and
 Open Graph URLs are derived from it, and X/Facebook need absolute image URLs.
 
 ## Structure
 
 ```
 src/
-├── data/items.json        34 items — the single source of truth
+├── data/items.json        34 items, the single source of truth
 ├── data/categories.json
 ├── assets/items/          source artwork, optimised at build time
 ├── lib/                   pure logic, no DOM, unit-tested
@@ -39,7 +39,7 @@ src/
 │   ├── share-card.ts      canvas summary card
 │   ├── tour.ts            how-to-play tour steps + placement math
 │   └── verdict.ts
-├── components/            Svelte — Game (island root), Entry, Topbar, Board,
+├── components/            Svelte: Game (island root), Entry, Topbar, Board,
 │                          ItemCard, CartDrawer, Summary, Tour
 ├── layouts/Base.astro     document shell, meta, fonts
 ├── pages/index.astro      image pipeline + island mount
@@ -67,7 +67,7 @@ Edit `src/data/items.json`. One object per item:
 }
 ```
 
-`code` is a permanent two-character share-URL identifier. **Never reuse one** — a
+`code` is a permanent two-character share-URL identifier. **Never reuse one.** A
 recycled code silently corrupts previously shared links. New items take the next unused
 code; retired items just leave a gap, and old links referencing them degrade gracefully
 instead of breaking.
@@ -77,14 +77,14 @@ instead of breaking.
 ## Images
 
 The artwork in `src/assets/items/` is real photography, sourced from openly licensed
-images (Wikimedia Commons — public domain, CC0, CC BY, or CC BY-SA). Each item's
+images (Wikimedia Commons: public domain, CC0, CC BY, or CC BY-SA). Each item's
 `imageCredit` in `items.json` records the author, source, exact license, and file page
-URL. CC BY / CC BY-SA require attribution, so keep those credits intact — and if an
+URL. CC BY / CC BY-SA require attribution, so keep those credits intact, and if an
 image is ever replaced with a non-CC one, clear the credit. (`scripts/build-item-art.mjs`
 still exists to generate placeholder plates for new items that don't have a photo yet;
 it never overwrites existing files.)
 
-Those credits are rendered — a collapsed **Photography credits** list at the end of the
+Those credits are rendered. A collapsed **Photography credits** list at the end of the
 board names every photographer and links their file page. Storing attribution in a JSON
 file nobody reads does not satisfy CC BY, so an item with a photo needs a real credit or
 it will simply be missing from that list. `npm test` enforces the pairing: every item
@@ -115,7 +115,7 @@ cannot be used inside a Svelte component, and the entire board lives inside one.
 `getImage()` gives the same sharp pipeline with a serialisable result that can cross the
 island boundary.
 
-Two Astro defaults are off and their absence is silent — both are set in
+Two Astro defaults are off and their absence is silent. Both are set in
 `astro.config.mjs`. Without `image.layout` there is no srcset at all; without
 `image.responsiveStyles` the generated srcset never resizes anything.
 
@@ -123,18 +123,18 @@ Current build: ~9.5KB gzipped HTML, ~26KB gzipped JS, largest card image ~5KB AV
 
 ## Sharing
 
-A finished run encodes into the URL as `?r=v1.<amount>.<tax>.<pairs>` — no backend, no
+A finished run encodes into the URL as `?r=v1.<amount>.<tax>.<pairs>`. No backend, no
 database. Opening that link replays the exact cart. `Copy share link` in the summary
 gives you one; the summary card also renders it so it survives being screenshotted.
 
 The Open Graph image is currently static (`public/og.png`). Per-result preview images
-would need on-demand rendering — add `@astrojs/vercel`, a `/og/[code].png` endpoint with
+would need on-demand rendering: add `@astrojs/vercel`, a `/og/[code].png` endpoint with
 `prerender = false`, and reuse the `share-card.ts` layout.
 
 ## Testing
 
-- `npm test` — unit tests over the pure logic.
-- `npm run test:e2e` — end-to-end tests across desktop and mobile viewports, run
+- `npm test` runs unit tests over the pure logic.
+- `npm run test:e2e` runs end-to-end tests across desktop and mobile viewports,
   against the real production build (image formats and hydration differ from dev).
 
 E2E covers the entry flow, tax toggle, image formats and lazy-loading attributes, cart
@@ -152,7 +152,7 @@ binary.
 - Prices are ballpark 2026 figures. `priceVerified` tracks when each was last checked.
 - Tax estimates use 2025 single-filer brackets plus a flat 5% state stand-in. Real state
   rates run from 0% to about 13%.
-- Fonts load from Google Fonts. Self-host them before this becomes a real site — it's a
+- Fonts load from Google Fonts. Self-host them before this becomes a real site; it's a
   render-blocking third-party request.
 - No analytics, no cookies, no accounts. A single `localStorage` flag remembers that
-  you've seen the how-to-play tour — nothing leaves your browser.
+  you've seen the how-to-play tour. Nothing leaves your browser.
