@@ -87,13 +87,19 @@ export function drawShareCard(canvas: HTMLCanvasElement, data: ShareCardData): v
   // clearance. Bottom-right would collide with the LEFT OVER figure.
   ctx.fillStyle = '#e8b73c';
   ctx.font = `700 22px ${body}`;
-  ctx.fillText('S P E N D   Y O U R   L O T T E R Y   W I N N I N G S', PAD, PAD + 8);
+  const kicker = 'S P E N D   Y O U R   L O T T E R Y   W I N N I N G S';
+  ctx.fillText(kicker, PAD, PAD + 8);
+  /* Measured, not guessed: the URL is clipped to whatever the kicker leaves,
+     so editing the copy or swapping the font stack can't quietly overlap them.
+     Taken here while the kicker's font is still the active one. */
+  const kickerWidth = ctx.measureText(kicker).width;
 
   if (data.shareUrl) {
     ctx.fillStyle = 'rgba(246,239,223,.4)';
     ctx.font = `600 19px ${body}`;
     ctx.textAlign = 'right';
-    ctx.fillText(clip(ctx, data.shareUrl, W - PAD * 2 - 620), W - PAD, PAD + 8);
+    const GUTTER = 40;
+    ctx.fillText(clip(ctx, data.shareUrl, W - PAD * 2 - kickerWidth - GUTTER), W - PAD, PAD + 8);
     ctx.textAlign = 'left';
   }
 

@@ -244,6 +244,40 @@ test.describe('summary and sharing', () => {
     expect(painted.gold).toBeGreaterThan(10);
   });
 
+  /**
+   * Closing the summary has to leave focus somewhere a keyboard can carry on
+   * from. The drawer route is the one that used to fail: "I'm done spending"
+   * closes the drawer as it opens the summary, so by the time the summary
+   * closes that button is inside an inert subtree and focus() on it is a silent
+   * no-op — focus fell to <body> and the tab order restarted at the top of the
+   * document. Each opener now names its own restore target.
+   */
+  const focused = (page: Page) =>
+    page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? document.activeElement?.textContent ?? '');
+
+  test('closing the summary hands focus back, whichever way it was opened', async ({ page }) => {
+    await startGame(page);
+    await page.locator('.card[data-id="camry"] .hit').click();
+
+    // From the cart drawer: the button that opened it is gone by then, so the
+    // honest target is the cart button that owns the drawer.
+    await page.getByRole('button', { name: /^Cart/ }).click();
+    await page.getByRole('button', { name: /done spending/i }).click();
+    await expect(page.locator('canvas')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('canvas')).toHaveCount(0);
+    expect(await focused(page)).toMatch(/item(s)? in cart/i);
+
+    // From the end of the board: the trigger is still there to go back to.
+    const end = page.locator('.end').getByRole('button', { name: /see the damage/i });
+    await end.scrollIntoViewIfNeeded();
+    await end.click();
+    await expect(page.locator('canvas')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('canvas')).toHaveCount(0);
+    expect(await focused(page)).toMatch(/see the damage/i);
+  });
+
   test('a shared run replays exactly from the URL', async ({ page }) => {
     // Build the code with the same function the app uses, then cold-load it.
     const code = encodeRun(

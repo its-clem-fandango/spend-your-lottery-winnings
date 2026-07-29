@@ -102,6 +102,8 @@ test.describe('surviving a refresh', () => {
     await expect(page.locator('#amount')).toBeVisible();
   });
 
+  /* The `total` key is what older builds wrote; it's ignored now rather than
+     rejected, so a run saved before the change still opens. */
   test('a stored run naming items that no longer exist still opens', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('lottery.tourSeen', '1');
@@ -120,5 +122,38 @@ test.describe('surviving a refresh', () => {
     await page.goto('/');
     await expect(page.locator('.topbar')).toBeVisible();
     await expect(spent(page)).toHaveText('$28,000');
+  });
+
+  /**
+   * The spendable total is derived from gross and the tax flag, never read back
+   * out of storage. It has to be: the brackets are a hardcoded tax year, so a
+   * stored copy outlives the numbers it came from, and a run restored under the
+   * old figure would jump the moment the winnings dialog recomputed it —
+   * the same run showing two totals depending on whether you opened a dialog.
+   */
+  test('a stale stored total is recomputed, not restored', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('lottery.tourSeen', '1');
+      localStorage.setItem(
+        'lottery.run.v1',
+        JSON.stringify({
+          v: 1,
+          gross: 12_400_000,
+          taxed: true,
+          total: 7_500_000, // what last year's brackets said
+          cart: {},
+          order: []
+        })
+      );
+    });
+    await page.goto('/');
+    await expect(page.locator('.topbar')).toBeVisible();
+
+    // spendable(12_400_000, true) under the brackets in tax.ts.
+    await expect(page.locator('.stat').first().locator('dd')).toHaveText('$7,234,980');
+
+    // And the winnings dialog agrees without being touched.
+    await page.locator('.stat').first().getByRole('button').click();
+    await expect(page.locator('#winnings-detail')).toContainText('$7,234,980');
   });
 });

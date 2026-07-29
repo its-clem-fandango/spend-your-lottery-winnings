@@ -81,6 +81,33 @@ test.describe('going into the red', () => {
     await expect(banner(page)).toContainText(/in the hole/i);
   });
 
+  /* The banner is a live region, so it has to already be in the accessibility
+     tree when the deficit arrives — a region inserted along with its first
+     content is routinely missed by NVDA and JAWS, and this is the one thing
+     the app most wants announced. Empty it collapses to nothing. */
+  test('the live region is mounted before there is anything to announce', async ({ page }) => {
+    await startGame(page);
+    await expect(banner(page)).toBeAttached();
+    await expect(banner(page)).toHaveAttribute('role', 'status');
+    await expect(banner(page)).toBeEmpty();
+    await expect(banner(page)).not.toBeVisible(); // no padding, no children, no height
+
+    await page.locator('.card[data-id="aspen-chalet"] .hit').click();
+    await setWinnings(page, '100000');
+
+    await expect(banner(page)).toBeVisible();
+  });
+
+  /* "-$1,140,000 in the hole" is a double negative, and the winnings dialog
+     already words the same figure positively. */
+  test('states the deficit without a minus sign', async ({ page }) => {
+    await startGame(page);
+    await page.locator('.card[data-id="aspen-chalet"] .hit').click();
+    await setWinnings(page, '100000');
+
+    await expect(banner(page).locator('strong')).toHaveText(/^\$[\d,]+ in the hole\.$/);
+  });
+
   /* In the red every add is refused, so the transient "you're broke" swap would
      blank the deficit almost constantly — hiding the number being joked about. */
   test('a refused tap never hides the deficit', async ({ page }) => {
@@ -110,7 +137,7 @@ test.describe('going into the red', () => {
 
     await page.locator('.card[data-id="aspen-chalet"] .rm').click();
 
-    await expect(banner(page)).toHaveCount(0);
+    await expect(banner(page)).toBeEmpty(); // the region stays, the text goes
     await expect(remaining(page)).toHaveText('$100,000');
   });
 
@@ -121,7 +148,7 @@ test.describe('going into the red', () => {
     await expect(banner(page)).toBeVisible();
 
     await setWinnings(page, '50000000');
-    await expect(banner(page)).toHaveCount(0);
+    await expect(banner(page)).toBeEmpty(); // the region stays, the text goes
   });
 
   test('a deficit survives being shared', async ({ page }) => {
@@ -263,7 +290,7 @@ test.describe('clearing the cart', () => {
     await page.getByRole('button', { name: /clear the cart, keep the winnings/i }).click();
     await page.getByRole('button', { name: /press again to clear 1 item/i }).click();
 
-    await expect(banner(page)).toHaveCount(0);
+    await expect(banner(page)).toBeEmpty(); // the region stays, the text goes
     await expect(page.locator('.stat.remaining dd')).toHaveText('$100,000');
   });
 });

@@ -11,10 +11,12 @@
     count: number;
     rows: Array<{ item: Item; qty: number; subtotal: number }>;
     shareUrl: string;
+    /** Where focus goes on close. Handed over by the opener — see below. */
+    returnTo: HTMLElement | null;
     onclose: () => void;
     onrestart: () => void;
   }
-  let { open, total, spent, remaining, count, rows, shareUrl, onclose, onrestart }: Props = $props();
+  let { open, total, spent, remaining, count, rows, shareUrl, returnTo, onclose, onrestart }: Props = $props();
 
   let canvas = $state<HTMLCanvasElement | null>(null);
   let closeBtn = $state<HTMLButtonElement | null>(null);
@@ -25,16 +27,25 @@
     canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   });
 
-  /* Runs before the draw effect below, so the trigger is captured before
-     focus moves to the close button. Restoring can silently fail if the
-     trigger is gone or inert by then — that's fine, focus just stays put. */
-  let returnTo: HTMLElement | null = null;
+  /**
+   * The trigger is given to us rather than read off document.activeElement,
+   * because one of the three ways in makes that reading useless: the drawer's
+   * "I'm done spending" closes the drawer as it opens this, so by the time the
+   * summary closes again that button is sitting inside an inert subtree and
+   * focus() on it is a silent no-op — focus lands on <body> instead of nowhere.
+   * The opener knows what should get focus back; this component doesn't.
+   *
+   * Captured on open so a later re-render can't swap the target mid-dialog, and
+   * declared before the draw effect below so it runs first — by then focus has
+   * already moved to the close button.
+   */
+  let restoreTo: HTMLElement | null = null;
   $effect(() => {
     if (open) {
-      returnTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    } else if (returnTo) {
-      returnTo.focus();
-      returnTo = null;
+      restoreTo = returnTo;
+    } else if (restoreTo) {
+      restoreTo.focus();
+      restoreTo = null;
     }
   });
 

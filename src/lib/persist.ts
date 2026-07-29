@@ -1,17 +1,22 @@
 import type { Cart, GameState, Item } from './types';
 import { clamp } from './money';
 import { MAX_AMOUNT } from './amount';
+import { spendable } from './tax';
 import { clampCart, indexItems } from './cart';
 
 /**
  * Keeps a run alive across a refresh, so reloading stops being the only way to
- * change your mind. Stored as plain JSON rather than a share code: codes carry
- * the spendable total and throw the pre-tax figure away, and the edit dialog
- * needs both.
+ * change your mind. Stored as plain JSON rather than a share code, because a
+ * code throws the pre-tax figure away and the edit dialog needs it.
  *
  * localStorage is user-editable, so parseRun treats what it reads exactly like
  * the share decoder treats a URL — every field is re-derived or rejected, never
- * trusted.
+ * trusted. That includes the spendable total, which is why it isn't stored at
+ * all: it is a function of gross and taxed, and the brackets it comes from are
+ * a hardcoded tax year. Keeping a copy would mean a run saved under one year's
+ * brackets restores with a total the rest of the app no longer agrees with —
+ * the topbar and the winnings dialog showing two different numbers for the same
+ * run until you touch the dialog.
  */
 
 export const RUN_KEY = 'lottery.run.v1';
@@ -20,7 +25,6 @@ interface StoredRun {
   v: 1;
   gross: number;
   taxed: boolean;
-  total: number;
   cart: Cart;
   order: string[];
 }
@@ -30,7 +34,6 @@ export function serializeRun(state: GameState): string {
     v: 1,
     gross: state.gross,
     taxed: state.taxed,
-    total: state.total,
     cart: state.cart,
     order: state.order
   };
@@ -57,9 +60,9 @@ export function parseRun(raw: string | null, items: readonly Item[]): GameState 
   if (run.v !== 1) return null;
 
   const gross = amount(run.gross);
-  const total = amount(run.total);
   // A zero jackpot is the blank pre-start state, not a run worth restoring.
-  if (gross === null || total === null || gross < 1) return null;
+  if (gross === null || gross < 1) return null;
+  const taxed = run.taxed === true;
 
   const index = indexItems(items);
   const cart: Cart = {};
@@ -89,7 +92,7 @@ export function parseRun(raw: string | null, items: readonly Item[]): GameState 
   }
 
   const fitted = clampCart(cart, order, index, MAX_AMOUNT);
-  return { gross, taxed: run.taxed === true, total, cart: fitted.cart, order: fitted.order };
+  return { gross, taxed, total: spendable(gross, taxed), cart: fitted.cart, order: fitted.order };
 }
 
 /* localStorage can be absent (SSR, node tests) or throw (Safari private mode,

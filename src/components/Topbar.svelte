@@ -172,13 +172,19 @@
        this element's height as --topbar-h, which parks the board's tab rail.
        As a sibling below, the banner would scroll away and the rail would
        ride over it. The figure is the real deficit, not the tween, so the
-       live region announces once per action instead of once per frame. -->
-  {#if deficit > 0}
-    <div class="debt" role="status">
-      <strong>{money(-deficit)} in the hole.</strong>
+       live region announces once per action instead of once per frame.
+
+       The region stays mounted and empty rather than appearing with its text:
+       a live region inserted together with its first content is routinely
+       missed by NVDA and JAWS, which would make going into the red the one
+       moment the app most wants to announce and least likely to. Only the
+       banner's skin hangs off .on, so empty it collapses to nothing. -->
+  <div class="debt" class:on={deficit > 0} role="status">
+    {#if deficit > 0}
+      <strong>{money(deficit)} in the hole.</strong>
       <span>{deficitLine}</span>
-    </div>
-  {/if}
+    {/if}
+  </div>
 </header>
 
 <style>
@@ -316,15 +322,20 @@
 
   .progress { max-width: 1180px; margin: 12px auto 0; padding: 0 clamp(14px, 3vw, 28px) 12px; }
 
+  /* Empty and unstyled while solvent: no background, no padding, so a flex box
+     with no children takes up no height and the banner still reads as arriving
+     rather than filling in. */
   .debt {
-    background: var(--red);
     color: var(--cream-2);
-    padding: 7px clamp(14px, 3vw, 28px);
     font-size: 12.5px;
     line-height: 1.4;
     display: flex;
     flex-wrap: wrap;
     gap: 0 7px;
+  }
+  .debt.on {
+    background: var(--red);
+    padding: 7px clamp(14px, 3vw, 28px);
     animation: debt-in 0.28s ease;
   }
   .debt strong { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }

@@ -42,6 +42,7 @@
   let board = $state<Board | null>(null);
   let topbar = $state<Topbar | null>(null);
   let root = $state<HTMLElement | null>(null);
+  let summaryReturn = $state<HTMLElement | null>(null);
 
   let spent = $derived(spentOf(state.cart, index));
   let remaining = $derived(remainingOf(state, index));
@@ -123,6 +124,7 @@
     summaryOpen = false;
     cartOpen = false;
     winningsOpen = false;
+    summaryReturn = null; // the button it points at is about to be unmounted
     started = false;
     state = { gross: 0, taxed: false, total: 0, cart: {}, order: [] };
     clearRun();
@@ -221,6 +223,19 @@
     topbar?.cartElement()?.focus();
   }
 
+  /**
+   * Every route into the summary names its own focus-restore target, because
+   * document.activeElement can't be trusted to still be focusable by the time
+   * the dialog closes. Called from a click handler, before any state changes,
+   * so activeElement is exactly the button that was pressed — except from the
+   * drawer, where that button is about to go inert and the cart button is the
+   * honest place to come back to.
+   */
+  function openSummary(el?: HTMLElement | null) {
+    summaryReturn = el ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    summaryOpen = true;
+  }
+
   function onKeydown(e: KeyboardEvent) {
     if (tourOpen) return; // the tour owns the keyboard while it's up
     if (e.key !== 'Escape') return;
@@ -264,12 +279,12 @@
       onadd={add}
       onremove={remove}
       onclear={clear}
-      ondone={() => (summaryOpen = true)}
+      ondone={() => openSummary()}
     />
 
     <div class="nudge" class:on={stuck && !summaryOpen} role="status">
       <p><strong>That's the lot.</strong> Nothing left you can afford.</p>
-      <button class="btn go" type="button" onclick={() => (summaryOpen = true)}>See the damage</button>
+      <button class="btn go" type="button" onclick={() => openSummary()}>See the damage</button>
     </div>
   </div>
 
@@ -286,7 +301,7 @@
     onadd={(id) => add(id)}
     onremove={remove}
     onclear={clear}
-    ondone={() => { cartOpen = false; summaryOpen = true; }}
+    ondone={() => { cartOpen = false; openSummary(topbar?.cartElement()); }}
   />
 
   <Summary
@@ -297,6 +312,7 @@
     {count}
     {rows}
     {shareUrl}
+    returnTo={summaryReturn}
     onclose={() => (summaryOpen = false)}
     onrestart={restart}
   />

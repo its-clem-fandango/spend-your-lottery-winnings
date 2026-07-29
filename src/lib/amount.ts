@@ -7,8 +7,6 @@ import { clamp } from './money';
  * without a browser.
  */
 
-export const MIN_AMOUNT = 1_000;
-
 /**
  * Not a limit on the fantasy — it's deliberately absurd, roughly five hundred
  * times the largest jackpot ever won, so nobody typing a real number ever meets

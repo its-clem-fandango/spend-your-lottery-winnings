@@ -3,6 +3,7 @@ import itemsJson from '../../src/data/items.json';
 import type { Item, GameState } from '../../src/lib/types';
 import { parseRun, serializeRun, loadRun, saveRun, clearRun } from '../../src/lib/persist';
 import { MAX_AMOUNT } from '../../src/lib/amount';
+import { spendable } from '../../src/lib/tax';
 import { indexItems, spent } from '../../src/lib/cart';
 
 const items = itemsJson as Item[];
@@ -27,17 +28,27 @@ describe('run persistence', () => {
   });
 
   /* Unlike a share code, storage keeps the pre-tax figure — the edit dialog
-     needs it, and re-deriving gross from a net total double-taxes. */
+     needs it, and re-deriving gross from a net total double-taxes. The net
+     figure is the one that isn't kept: it comes back out of spendable(). */
   it('keeps gross and total apart for a taxed run', () => {
-    const taxed = run({ taxed: true, gross: 12_400_000, total: 7_500_000 });
+    const taxed = run({ taxed: true, gross: 12_400_000, total: spendable(12_400_000, true) });
     const back = parseRun(serializeRun(taxed), items)!;
     expect(back.gross).toBe(12_400_000);
-    expect(back.total).toBe(7_500_000);
+    expect(back.total).toBe(spendable(12_400_000, true));
+    expect(back.total).toBeLessThan(back.gross);
     expect(back.taxed).toBe(true);
   });
 
+  /* The whole reason the total isn't stored: the brackets are a hardcoded tax
+     year, so a stored copy would outlive the numbers it was derived from and
+     the topbar would disagree with the winnings dialog. */
+  it('re-derives the total instead of trusting what was written', () => {
+    const back = parseRun(stored({ taxed: true, total: 99 }), items)!;
+    expect(back.total).toBe(spendable(back.gross, true));
+  });
+
   it('restores a run that has gone into the red', () => {
-    const debt = run({ total: 1_000, cart: { camry: 2 }, order: ['camry'] });
+    const debt = run({ gross: 1_000, total: 1_000, cart: { camry: 2 }, order: ['camry'] });
     const back = parseRun(serializeRun(debt), items)!;
     expect(spent(back.cart, index)).toBeGreaterThan(back.total);
   });
@@ -64,9 +75,9 @@ describe('run persistence', () => {
     it('returns null for a jackpot of zero', () => {
       expect(parseRun(stored({ gross: 0 }), items)).toBeNull();
     });
-    it('returns null when the amounts are not numbers', () => {
+    it('returns null when the jackpot is not a number', () => {
       expect(parseRun(stored({ gross: 'lots' }), items)).toBeNull();
-      expect(parseRun(stored({ total: NaN }), items)).toBeNull();
+      expect(parseRun(stored({ gross: NaN }), items)).toBeNull(); // serialises to null
       expect(parseRun(stored({ gross: Infinity }), items)).toBeNull();
     });
   });
