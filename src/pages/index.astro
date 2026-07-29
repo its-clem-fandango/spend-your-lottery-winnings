@@ -23,7 +23,9 @@ const sources = import.meta.glob<{ default: ImageMetadata }>(
   { eager: true }
 );
 
-const WIDTHS = [210, 320, 420, 640];
+/* 800 is there for retina: the board is three across now, so a card's artwork
+   is ~360 CSS px and 2× overshoots the old 640 top end. */
+const WIDTHS = [210, 320, 420, 640, 800];
 const images: Record<string, ItemImage> = {};
 
 for (const item of items) {

@@ -166,5 +166,5 @@
   .body { padding: 6px 22px 24px; }
   .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
   .actions :global(.btn) { flex: 1 1 150px; }
-  .note { margin: 14px 0 0; font-size: 12.5px; color: rgba(10, 31, 24, 0.45); text-align: center; }
+  .note { margin: 14px 0 0; font-size: 14px; color: rgba(10, 31, 24, 0.62); text-align: center; }
 </style>

@@ -14,8 +14,8 @@
   }
   let { item, image, qty, affordable, eager, onadd, onremove }: Props = $props();
 
-  /* Cards are ~250px at desktop, roughly two-up on phones. */
-  const SIZES = '(max-width: 520px) 45vw, (max-width: 1180px) 24vw, 250px';
+  /* Cards are ~360px at desktop (three across), roughly two-up on phones. */
+  const SIZES = '(max-width: 520px) 45vw, (max-width: 1180px) 32vw, 360px';
 
   let root = $state<HTMLElement | null>(null);
   let popping = $state(false);
@@ -96,7 +96,7 @@
     background: var(--cream-2);
     border: 1.5px solid var(--line);
     border-radius: var(--r-md);
-    padding: 12px 12px 12px;
+    padding: 14px;
     cursor: pointer;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
@@ -172,33 +172,33 @@
     100% { transform: scale(1); }
   }
 
-  h3 { margin: 0 0 3px; font-size: 15.5px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
-  .blurb { margin: 0 0 12px; font-size: 12.6px; line-height: 1.4; color: rgba(10, 31, 24, 0.55); flex: 1; }
+  h3 { margin: 0 0 5px; font-size: 20px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+  .blurb { margin: 0 0 14px; font-size: 16px; line-height: 1.45; color: rgba(10, 31, 24, 0.78); flex: 1; }
   /* Price as a casino chip, not a whisper. */
   .price {
     align-self: flex-start;
     font-family: var(--display);
     font-weight: 900;
-    font-size: 15.5px;
+    font-size: 19px;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
     color: var(--gold-soft);
     background: var(--green-800);
     border: 1px solid rgba(232, 183, 60, 0.55);
     border-radius: 999px;
-    padding: 5px 13px;
+    padding: 6px 16px;
     box-shadow: inset 0 1px 0 rgba(255, 233, 163, 0.18);
   }
 
   .qty {
     position: absolute;
-    top: 9px; right: 9px;
-    min-width: 27px; height: 27px;
-    padding: 0 8px;
+    top: 10px; right: 10px;
+    min-width: 31px; height: 31px;
+    padding: 0 9px;
     border-radius: 99px;
     background: var(--foil-btn);
     color: var(--green-900);
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 900;
     display: grid;
     place-items: center;
@@ -224,19 +224,19 @@
 
   .rm {
     position: absolute;
-    left: 9px; top: 9px;
+    left: 10px; top: 10px;
     z-index: 2;
-    width: 27px; height: 27px;
+    width: 31px; height: 31px;
     border-radius: 50%;
     border: 1.5px solid var(--line);
     background: var(--cream-2);
     cursor: pointer;
     display: grid;
     place-items: center;
-    font-size: 18px;
+    font-size: 21px;
     line-height: 1;
     font-weight: 700;
-    color: rgba(10, 31, 24, 0.55);
+    color: rgba(10, 31, 24, 0.7);
     opacity: 0;
     transform: scale(0.7);
     pointer-events: none;

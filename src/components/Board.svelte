@@ -190,11 +190,11 @@
     border: 1.5px solid var(--line);
     background: transparent;
     border-radius: 999px;
-    padding: 8px 15px;
-    font-size: 13.5px;
+    padding: 9px 17px;
+    font-size: 15.5px;
     font-weight: 600;
     cursor: pointer;
-    color: rgba(10, 31, 24, 0.66);
+    color: rgba(10, 31, 24, 0.8);
     white-space: nowrap;
     transition: transform 0.14s ease, background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
   }
@@ -220,20 +220,20 @@
   }
   .end-line {
     margin: 0 0 18px;
-    font-size: 14.5px;
-    color: rgba(10, 31, 24, 0.55);
+    font-size: 16.5px;
+    color: rgba(10, 31, 24, 0.72);
   }
   .end-line strong {
     display: block;
     font-family: var(--display);
     font-weight: 900;
-    font-size: clamp(22px, 3.6vw, 30px);
+    font-size: clamp(25px, 3.8vw, 33px);
     letter-spacing: -0.025em;
     color: var(--ink);
     margin-bottom: 5px;
   }
   .end-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .end-actions .btn { padding: 14px 24px; font-size: 15px; border-radius: 999px; }
+  .end-actions .btn { padding: 15px 26px; font-size: 17px; border-radius: 999px; }
   .end-clear {
     background: transparent;
     border: 1.5px solid rgba(216, 72, 63, 0.45);
@@ -251,13 +251,13 @@
     box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.85);
   }
   .end-done:hover { transform: translateY(-2px); }
-  .end-note { margin: 12px 0 0; font-size: 11.5px; color: rgba(10, 31, 24, 0.42); }
+  .end-note { margin: 12px 0 0; font-size: 13.5px; color: rgba(10, 31, 24, 0.6); }
 
   /* Collapsed by default — an obligation to meet, not something to read. */
-  .credits { margin-top: 26px; font-size: 12px; }
+  .credits { margin-top: 26px; font-size: 13.5px; }
   .credits summary {
     cursor: pointer;
-    color: rgba(10, 31, 24, 0.45);
+    color: rgba(10, 31, 24, 0.6);
     font-weight: 600;
     letter-spacing: 0.04em;
   }
@@ -276,12 +276,12 @@
   @media (max-width: 620px) { .credits ul { columns: 1; } }
   .credits li {
     break-inside: avoid;
-    margin-bottom: 4px;
-    color: rgba(10, 31, 24, 0.45);
-    line-height: 1.45;
+    margin-bottom: 5px;
+    color: rgba(10, 31, 24, 0.6);
+    line-height: 1.5;
   }
-  .credits li span { color: rgba(10, 31, 24, 0.62); }
-  .credits a { color: rgba(10, 31, 24, 0.72); text-underline-offset: 2px; }
+  .credits li span { color: rgba(10, 31, 24, 0.76); }
+  .credits a { color: rgba(10, 31, 24, 0.82); text-underline-offset: 2px; }
   .credits a:hover { color: var(--ink); }
   .credits em { font-style: normal; opacity: 0.7; white-space: nowrap; }
   .cat-head { display: flex; align-items: baseline; gap: 14px; margin: 0 0 18px; flex-wrap: wrap; }
@@ -289,10 +289,10 @@
     font-family: var(--display);
     font-weight: 900;
     letter-spacing: -0.025em;
-    font-size: clamp(26px, 4.6vw, 38px);
+    font-size: clamp(30px, 5vw, 42px);
     margin: 0;
   }
-  .cat-head p { margin: 0; font-size: 13.5px; font-style: italic; color: rgba(10, 31, 24, 0.55); }
+  .cat-head p { margin: 0; font-size: 16px; font-style: italic; color: rgba(10, 31, 24, 0.72); }
   /* Gold rule trailing off after the note — every section gets a plaque. */
   .cat-head::after {
     content: '';
@@ -307,7 +307,9 @@
   .grid {
     display: grid;
     gap: clamp(12px, 1.8vw, 18px);
-    grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
+    /* 300px min caps the board at three across inside the 1180px shell
+       (4 × 300 + gaps overflows it), and steps down from there. */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
   @media (max-width: 520px) {
     .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
