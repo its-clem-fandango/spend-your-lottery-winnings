@@ -152,7 +152,7 @@
   .head h2 {
     font-family: var(--display);
     font-weight: 900;
-    font-size: 21px;
+    font-size: 24px;
     letter-spacing: -0.025em;
     margin: 0;
   }
@@ -161,9 +161,9 @@
 
   .detail {
     margin: 13px 0 0;
-    font-size: 13.5px;
+    font-size: 16px;
     line-height: 1.55;
-    color: rgba(246, 239, 223, 0.62);
+    color: rgba(246, 239, 223, 0.8);
     min-height: 3.1em;
   }
   .hl { color: var(--gold); font-weight: 700; }
@@ -177,7 +177,7 @@
     padding: 12px 0;
     margin-top: 2px;
     border-top: 1px solid rgba(246, 239, 223, 0.12);
-    font-size: 13.5px;
+    font-size: 16px;
   }
   .switch {
     flex: none;
@@ -210,8 +210,8 @@
     background: transparent;
     color: var(--cream-2);
     border: 1.5px solid rgba(246, 239, 223, 0.3);
-    padding: 14px 18px;
-    font-size: 15px;
+    padding: 15px 20px;
+    font-size: 17px;
   }
   .cancel:hover { background: rgba(246, 239, 223, 0.08); border-color: rgba(246, 239, 223, 0.5); }
   .apply {
@@ -237,9 +237,9 @@
     border: 0;
     padding: 4px;
     font: inherit;
-    font-size: 12.5px;
+    font-size: 14.5px;
     font-weight: 700;
-    color: rgba(246, 239, 223, 0.72);
+    color: rgba(246, 239, 223, 0.85);
     text-decoration: underline;
     text-decoration-color: rgba(246, 239, 223, 0.3);
     text-underline-offset: 3px;
@@ -257,8 +257,8 @@
     border: 0;
     padding: 4px;
     font: inherit;
-    font-size: 12.5px;
-    color: rgba(246, 239, 223, 0.5);
+    font-size: 14px;
+    color: rgba(246, 239, 223, 0.68);
     text-decoration: underline;
     text-decoration-color: rgba(246, 239, 223, 0.25);
     text-underline-offset: 3px;

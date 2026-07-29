@@ -127,7 +127,7 @@
     background: rgba(216, 72, 63, 0.14);
     border: 1px solid rgba(216, 72, 63, 0.5);
     color: #ffb9b2;
-    font-size: 13px;
+    font-size: 14.5px;
     font-weight: 600;
     white-space: nowrap;
     opacity: 0;
@@ -169,7 +169,7 @@
 
   /* Same line, asked again in a smaller room. */
   .compact { padding-bottom: 7px; border-bottom-width: 2px; gap: 10px; }
-  .compact .dollar { font-size: clamp(24px, 5vw, 30px); }
-  .compact input { font-size: clamp(27px, 5.6vw, 34px); }
-  .compact .oops { font-size: 12px; padding: 5px 11px; bottom: calc(100% + 8px); }
+  .compact .dollar { font-size: clamp(26px, 5.2vw, 33px); }
+  .compact input { font-size: clamp(29px, 5.8vw, 37px); }
+  .compact .oops { font-size: 13.5px; padding: 5px 12px; bottom: calc(100% + 8px); }
 </style>

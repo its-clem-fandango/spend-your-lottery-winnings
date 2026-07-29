@@ -371,6 +371,6 @@
     max-width: calc(100vw - 24px);
   }
   .nudge.on { transform: translate(-50%, 0); }
-  .nudge p { margin: 0; font-size: 13.5px; line-height: 1.35; }
-  .go { background: var(--gold); color: var(--green-900); padding: 9px 16px; font-size: 13.5px; flex: none; }
+  .nudge p { margin: 0; font-size: 16px; line-height: 1.35; }
+  .go { background: var(--gold); color: var(--green-900); padding: 10px 18px; font-size: 15.5px; flex: none; }
 </style>

@@ -50,9 +50,9 @@
 
 <section class="entry" data-ready={ready ? '' : undefined}>
   <div class="inner">
-    <p class="kicker">Congratulations, allegedly</p>
+    <h1>Congratulations, <em>Vivian</em>.<br />You won!</h1>
 
-    <h1><label for="amount">If I <em>won</em><span class="vh"> — jackpot amount in dollars</span>&hellip;</label></h1>
+    <label class="ask" for="amount">How much did you win?</label>
 
     <div class="answer">
       <AmountField
@@ -138,24 +138,26 @@
     text-align: left;
   }
 
-  .kicker {
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    font-weight: 700;
-    color: var(--gold);
-    margin: 0 0 20px;
-  }
-
   h1 {
     font-family: var(--display);
     font-weight: 900;
-    font-size: clamp(44px, 9vw, 88px);
-    line-height: 0.98;
+    /* Capped below the old 88px: "Congratulations," is a long word to fit on
+       one line, and the name below it is what should land anyway. The 34px
+       floor is what keeps that word inside a 320px phone rather than clipped. */
+    font-size: clamp(34px, 7.4vw, 74px);
+    line-height: 1;
     letter-spacing: -0.035em;
-    margin: 0 0 10px;
+    margin: 0 0 18px;
   }
-  h1 label { cursor: text; }
+  /* The question the input is actually asking, kept next to the input. */
+  .ask {
+    display: block;
+    font-size: clamp(18px, 2.6vw, 23px);
+    font-weight: 600;
+    line-height: 1.3;
+    color: rgba(246, 239, 223, 0.9);
+    cursor: text;
+  }
   /* The one word that matters gets animated gold foil. */
   h1 em {
     font-style: normal;
@@ -171,14 +173,14 @@
     50% { background-position: 100% 0; }
   }
 
-  .answer { margin-top: clamp(18px, 4vw, 34px); }
+  .answer { margin-top: clamp(12px, 2.4vw, 20px); }
 
   /* Tax reality as a sentence, not a control panel. */
   .tax {
     margin: 14px 0 0;
-    font-size: clamp(14px, 1.9vw, 16.5px);
+    font-size: clamp(16px, 2.1vw, 19px);
     line-height: 1.55;
-    color: rgba(246, 239, 223, 0.62);
+    color: rgba(246, 239, 223, 0.8);
     min-height: 2.6em;
   }
   .hl { color: var(--gold); font-weight: 700; }
@@ -210,13 +212,13 @@
   }
   .start { width: min(100%, 300px); }
   .hint {
-    font-size: 12.5px;
-    color: rgba(246, 239, 223, 0.4);
+    font-size: 14.5px;
+    color: rgba(246, 239, 223, 0.58);
     white-space: nowrap;
   }
   .hint kbd {
     font-family: inherit;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     padding: 2px 7px;
     border: 1px solid rgba(246, 239, 223, 0.28);
@@ -235,11 +237,11 @@
     margin-top: clamp(30px, 5vw, 46px);
   }
   .chips-label {
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     font-weight: 700;
-    color: rgba(246, 239, 223, 0.4);
+    color: rgba(246, 239, 223, 0.58);
   }
   .chip {
     background: none;
@@ -250,7 +252,9 @@
     gap: 8px;
     cursor: pointer;
     font-family: var(--body);
-    color: rgba(246, 239, 223, 0.85);
+    font-size: 17px;
+    font-weight: 600;
+    color: rgba(246, 239, 223, 0.92);
     border-bottom: 1.5px dashed rgba(246, 239, 223, 0.25);
     transition: color 0.15s ease, border-color 0.15s ease;
   }
@@ -265,7 +269,7 @@
     border-bottom: 1.5px solid var(--gold);
   }
   .chip small {
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: 600;
     letter-spacing: 0.07em;
     text-transform: uppercase;

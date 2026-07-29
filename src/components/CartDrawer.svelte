@@ -138,15 +138,15 @@
     justify-content: space-between;
     gap: 12px;
   }
-  .head h2 { font-family: var(--display); font-weight: 900; font-size: 23px; margin: 0; letter-spacing: -0.025em; }
+  .head h2 { font-family: var(--display); font-weight: 900; font-size: 26px; margin: 0; letter-spacing: -0.025em; }
   .close:hover { transform: rotate(90deg); }
 
   .list { flex: 1; overflow-y: auto; padding: 8px 20px 20px; margin: 0; list-style: none; }
-  .empty { padding: 52px 24px; text-align: center; color: rgba(10, 31, 24, 0.5); font-size: 14px; line-height: 1.6; }
+  .empty { padding: 52px 24px; text-align: center; color: rgba(10, 31, 24, 0.7); font-size: 16px; line-height: 1.6; }
   .empty .big {
     font-family: var(--display);
     font-weight: 900;
-    font-size: 21px;
+    font-size: 24px;
     color: var(--ink);
     display: block;
     margin-bottom: 6px;
@@ -169,11 +169,11 @@
   .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
   .main { flex: 1; min-width: 0; }
-  .main strong { display: block; font-size: 13.6px; font-weight: 700; line-height: 1.3; }
-  .main span { font-size: 12.5px; color: rgba(10, 31, 24, 0.55); font-variant-numeric: tabular-nums; }
+  .main strong { display: block; font-size: 16px; font-weight: 700; line-height: 1.3; }
+  .main span { font-size: 14.5px; color: rgba(10, 31, 24, 0.72); font-variant-numeric: tabular-nums; }
 
   .stepper { display: flex; align-items: center; gap: 2px; flex: none; }
-  .stepper .n { min-width: 22px; text-align: center; font-weight: 700; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .stepper .n { min-width: 24px; text-align: center; font-weight: 700; font-size: 15.5px; font-variant-numeric: tabular-nums; }
 
   .foot {
     padding: 16px 20px calc(18px + env(safe-area-inset-bottom));
@@ -182,16 +182,16 @@
   }
   .total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
   .total span {
-    font-size: 12.5px;
+    font-size: 13.5px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     font-weight: 700;
-    color: rgba(10, 31, 24, 0.5);
+    color: rgba(10, 31, 24, 0.68);
   }
   .total strong {
     font-family: var(--display);
     font-weight: 900;
-    font-size: 26px;
+    font-size: 29px;
     letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
   }
@@ -202,8 +202,8 @@
     flex: 1 1 auto;
     background: var(--foil-btn);
     color: var(--green-900);
-    padding: 15px;
-    font-size: 15.5px;
+    padding: 16px;
+    font-size: 17px;
     font-weight: 900;
     border-radius: 999px;
     border: 1px solid rgba(139, 94, 18, 0.5);
@@ -216,8 +216,8 @@
     background: transparent;
     border: 1.5px solid rgba(216, 72, 63, 0.45);
     color: var(--red);
-    padding: 15px 17px;
-    font-size: 14.5px;
+    padding: 16px 18px;
+    font-size: 16px;
     font-weight: 700;
     border-radius: 999px;
     white-space: nowrap;
@@ -230,7 +230,7 @@
   .keeps {
     margin: 10px 0 0;
     text-align: center;
-    font-size: 11.5px;
-    color: rgba(10, 31, 24, 0.42);
+    font-size: 13px;
+    color: rgba(10, 31, 24, 0.6);
   }
 </style>

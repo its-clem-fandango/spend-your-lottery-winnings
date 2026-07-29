@@ -207,11 +207,11 @@
   .brand {
     font-family: var(--display);
     font-weight: 900;
-    font-size: 17px;
+    font-size: 19px;
     letter-spacing: -0.02em;
     line-height: 1.1;
     flex: none;
-    max-width: 130px;
+    max-width: 145px;
     display: none;
   }
   .brand span { color: var(--gold); }
@@ -220,15 +220,15 @@
   .stats { display: flex; flex: 1; gap: clamp(10px, 3.4vw, 36px); min-width: 0; margin: 0; }
   .stat { min-width: 0; }
   .stat dt {
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     font-weight: 700;
-    color: rgba(246, 239, 223, 0.45);
-    margin: 0 0 2px;
+    color: rgba(246, 239, 223, 0.62);
+    margin: 0 0 3px;
     white-space: nowrap;
   }
-  .stat dd { margin: 0; font-size: clamp(17px, 4.2vw, 27px); line-height: 1.1; white-space: nowrap; }
+  .stat dd { margin: 0; font-size: clamp(19px, 4.4vw, 30px); line-height: 1.1; white-space: nowrap; }
 
   /* Reads as the number it replaces, with just enough of a hint to be findable. */
   .edit-winnings {
@@ -256,21 +256,21 @@
   .broke-copy {
     font-family: var(--body) !important;
     font-weight: 700;
-    font-size: clamp(14px, 3.4vw, 20px);
+    font-size: clamp(15px, 3.4vw, 22px);
     letter-spacing: 0;
   }
 
   /* Quiet next to the foil cart button, but findable when someone's lost. */
   .help {
     flex: none;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 999px;
-    border: 1.5px solid rgba(246, 239, 223, 0.35);
+    border: 1.5px solid rgba(246, 239, 223, 0.45);
     background: transparent;
     color: var(--cream-2);
     font-family: var(--display);
-    font-size: 19px;
+    font-size: 22px;
     font-weight: 700;
     line-height: 1;
     cursor: pointer;
@@ -288,8 +288,8 @@
     position: relative;
     background: var(--foil-btn);
     color: var(--green-900);
-    padding: 11px 18px;
-    font-size: 14px;
+    padding: 13px 21px;
+    font-size: 16px;
     font-weight: 900;
     border-radius: 999px;
     border: 1px solid rgba(139, 94, 18, 0.5);
@@ -299,12 +299,12 @@
   .count {
     position: absolute;
     top: -6px; right: -6px;
-    min-width: 22px; height: 22px;
+    min-width: 24px; height: 24px;
     padding: 0 6px;
     border-radius: 99px;
     background: var(--green-900);
     color: var(--gold);
-    font-size: 12px;
+    font-size: 13.5px;
     font-weight: 700;
     display: grid;
     place-items: center;
@@ -327,7 +327,7 @@
      rather than filling in. */
   .debt {
     color: var(--cream-2);
-    font-size: 12.5px;
+    font-size: 14.5px;
     line-height: 1.4;
     display: flex;
     flex-wrap: wrap;

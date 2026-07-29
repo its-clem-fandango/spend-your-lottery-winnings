@@ -188,7 +188,7 @@
 
   .step-card {
     position: fixed;
-    width: min(380px, calc(100vw - 32px));
+    width: min(420px, calc(100vw - 32px));
     background: var(--cream-2);
     border-radius: var(--r-lg);
     box-shadow: var(--shadow-lg);
@@ -205,23 +205,23 @@
 
   .progress-line {
     margin: 0 0 6px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: rgba(10, 31, 24, 0.45);
+    color: rgba(10, 31, 24, 0.62);
   }
   h2 {
     margin: 0 0 8px;
     font-family: var(--display);
     font-weight: 900;
-    font-size: 26px;
+    font-size: 29px;
     letter-spacing: -0.02em;
     line-height: 1.1;
   }
   .body-copy {
     margin: 0 0 18px;
-    font-size: 17px;
+    font-size: 19px;
     line-height: 1.5;
   }
 
