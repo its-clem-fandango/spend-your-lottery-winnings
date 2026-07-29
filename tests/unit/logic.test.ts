@@ -408,6 +408,27 @@ describe('data integrity', () => {
     for (const slug of used) expect(categories.some((c) => c.slug === slug)).toBe(true);
   });
 
+  /* The board renders items.json in file order — it filters by category and
+     never sorts — so array position is the display order. An item appended to
+     the end of the file lands at the bottom of its category no matter what it
+     costs, which is how a $25 rib tip dinner ended up below a $145k kitchen.
+     New items go in their price slot, not at the end. Share codes are frozen
+     independently of position, so reordering is safe. */
+  it('lists each category cheapest first', () => {
+    for (const c of categories) {
+      const prices = items.filter((i) => i.category === c.slug).map((i) => i.price);
+      expect({ [c.slug]: prices }).toEqual({ [c.slug]: [...prices].sort((a, b) => a - b) });
+    }
+  });
+
+  /* Categories are rendered in categories.json order, so the file only stays
+     readable if its blocks run in that order too — and a stray item marooned
+     in another category's block is the bug above waiting to happen again. */
+  it('groups the file by category, in the order the board renders them', () => {
+    const blocks = items.map((i) => i.category).filter((c, i, a) => c !== a[i - 1]);
+    expect(blocks).toEqual(categories.map((c) => c.slug));
+  });
+
   it('has a positive price, a blurb and an image for every item', () => {
     for (const item of items) {
       expect(item.price).toBeGreaterThan(0);

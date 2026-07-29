@@ -247,6 +247,17 @@
       color 0.16s ease,
       border-color 0.16s ease;
   }
+  /* The circle stays 31px because that is what looks right in the corner of a
+     card; the finger gets 44 anyway. A transparent extension of the button's
+     own hit box, so it costs no layout and nothing moves. It sits above .hit
+     (z-index 2 vs 1), which is the whole point: the eight pixels around the
+     minus must remove, not add. */
+  .rm::after {
+    content: '';
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+  }
   .card.owned .rm { opacity: 1; transform: scale(1); pointer-events: auto; }
   .rm:hover { background: var(--red); border-color: var(--red); color: #fff; }
 </style>

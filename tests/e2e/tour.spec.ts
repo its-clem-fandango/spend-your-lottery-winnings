@@ -43,6 +43,26 @@ test.describe('how-to-play tour', () => {
     expect(overlaps).toBe(true);
   });
 
+  /* The entry screen advertises Enter, and that keystroke outlives the screen
+     it was pressed on: it used to reach the tour it had just opened — once as
+     a keydown on window, once as a click on the primary button focus had
+     moved to — and open a first run on step 3 with the first two steps burnt.
+     Both paths start the same run, so both must start the same tour. */
+  test('starting with Enter opens on the first step, like clicking does', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.entry[data-ready]')).toBeAttached();
+    const field = page.locator('#amount');
+    await field.fill('');
+    await field.pressSequentially('12400000');
+    await field.press('Enter');
+
+    const tour = page.locator('.tour[role="dialog"]');
+    await expect(tour).toBeVisible();
+    await expect(tour).toContainText('Step 1 of 3');
+    // Focus parks on the dialog, not on a button the same keystroke can press.
+    expect(await page.evaluate(() => document.activeElement?.classList.contains('tour'))).toBe(true);
+  });
+
   test('stepping through to the end returns control to the game', async ({ page }) => {
     await startFresh(page);
     await page.getByRole('button', { name: /^next$/i }).click();
@@ -73,10 +93,8 @@ test.describe('how-to-play tour', () => {
     await page.getByRole('button', { name: /skip the tour/i }).click();
     await expect(page.locator('.tour')).toHaveCount(0);
 
-    // Even skipped counts as seen: restart and it stays away. A refresh alone
-    // now resumes the run, so drop the saved run to get a genuine fresh start —
-    // what's under test here is the tour flag outliving it.
-    await page.evaluate(() => localStorage.removeItem('lottery.run.v1'));
+    // Even skipped counts as seen: refresh back to the landing page, start
+    // another run, and it stays away. The tour flag outlives the run.
     await page.reload();
     await expect(page.locator('.entry[data-ready]')).toBeAttached();
     const field = page.locator('#amount');

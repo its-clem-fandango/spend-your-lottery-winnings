@@ -12,7 +12,7 @@
   let cardPos = $state<{ top: number; left: number } | null>(null);
   let mobile = $state(false);
   let cardEl = $state<HTMLElement | null>(null);
-  let nextBtn = $state<HTMLButtonElement | null>(null);
+  let dialogEl = $state<HTMLElement | null>(null);
 
   const PAD = 8;
 
@@ -22,9 +22,17 @@
   /* Same rationale as Summary: capture the trigger before focus moves into
      the dialog; restoring can silently fail if it's gone — focus stays put. */
   let returnTo: HTMLElement | null = null;
+  /* The entry screen offers Enter as the way to start, and the tour opens on
+     that same keystroke — which is still travelling up to window when the
+     handler below mounts. Without a cutoff it advances the tour it just
+     opened, and a first run started with Enter lands on the last step with
+     the first two skipped for good. Events created before this instant
+     belong to whatever opened the tour, not to the tour. */
+  let openedAt = 0;
   $effect(() => {
     if (open) {
       stepIndex = 0;
+      openedAt = performance.now();
       returnTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     } else if (returnTo) {
       returnTo.focus();
@@ -75,7 +83,13 @@
       }
     };
     measure();
-    nextBtn?.focus();
+    /* The dialog takes focus, not the button inside it. Enter is how the entry
+       screen starts a run, and that keystroke is still in flight when the tour
+       opens on top of it: focus the primary action and the browser delivers
+       the rest of the keypress to it as a click, advancing a tour nobody has
+       read yet. A container can't be activated, and the step's title is
+       announced because the dialog is labelled by it. */
+    dialogEl?.focus();
 
     let raf = 0;
     const onScroll = () => {
@@ -108,6 +122,9 @@
 
   function onKeydown(e: KeyboardEvent) {
     if (!open) return;
+    // Both clocks are page-relative, so anything older than the open is the
+    // keystroke that caused it.
+    if (e.timeStamp < openedAt) return;
     if (e.key === 'Escape') {
       onclose();
     } else if (e.key === 'ArrowRight') {
@@ -126,7 +143,14 @@
 {#if open}
   <!-- tour: 100, above summary's 90. Clicks anywhere but the card are
        swallowed on purpose — a stray tap must not skip the content. -->
-  <div class="tour" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+  <div
+    class="tour"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tour-title"
+    tabindex="-1"
+    bind:this={dialogEl}
+  >
     {#if rect}
       <div
         class="spotlight"
@@ -152,8 +176,8 @@
         {#if stepIndex > 0}
           <button class="btn btn-ghost back" type="button" onclick={back}>Back</button>
         {/if}
-        <button class="btn btn-primary next" type="button" bind:this={nextBtn} onclick={next}>
-          {last ? "Got it — let's spend" : 'Next'}
+        <button class="btn btn-primary next" type="button" onclick={next}>
+          {last ? "Got it, let's spend" : 'Next'}
         </button>
       </div>
       <button class="btn btn-ghost skip" type="button" onclick={onclose}>Skip the tour</button>
@@ -167,6 +191,10 @@
     inset: 0;
     z-index: 100;
   }
+  /* Focused only to park the keyboard inside the dialog; the spotlight is the
+     visible answer to "where am I", so a ring around the whole viewport would
+     just be noise. Every control inside keeps its own. */
+  .tour:focus { outline: none; }
 
   /* One transparent div does all the work: the gold ring, the glow, and a
      giant shadow that dims everything outside the cutout. It morphs between

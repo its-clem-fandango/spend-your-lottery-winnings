@@ -1,6 +1,5 @@
 <script lang="ts">
   import { money } from '../lib/money';
-  import { twoStep } from '../lib/confirm.svelte';
   import type { Cart, Item, ItemImage } from '../lib/types';
 
   interface Props {
@@ -23,16 +22,6 @@
   $effect(() => {
     if (open) closeBtn?.focus();
   });
-
-  /* Two-step rather than a confirm dialog: the drawer is already a dialog, and
-     nesting one inside it means nesting focus traps. */
-  const confirmClear = twoStep(() => onclear());
-
-  $effect(() => {
-    if (!open || !order.length) confirmClear.disarm();
-  });
-
-  $effect(() => () => confirmClear.disarm());
 </script>
 
 <div class="scrim" class:on={open} onclick={onclose} role="presentation"></div>
@@ -86,14 +75,7 @@
     </div>
     <div class="buttons">
       {#if order.length}
-        <!-- "Press" rather than tap or click: one word that's true on both a
-             phone and a keyboard, and one selector that covers both in tests. -->
-        <button class="btn clear" type="button" class:armed={confirmClear.armed} onclick={confirmClear.press}>
-          {confirmClear.armed ? 'Press again' : 'Clear cart'}
-        </button>
-        <span class="vh" role="status">
-          {confirmClear.armed ? 'Press the clear button again to empty your cart.' : ''}
-        </span>
+        <button class="btn clear" type="button" onclick={onclear}>Clear cart</button>
       {/if}
       <button class="btn done" type="button" onclick={ondone}>I'm done spending</button>
     </div>
@@ -224,7 +206,6 @@
     transition: background 0.15s ease, border-color 0.15s ease;
   }
   .clear:hover { background: rgba(216, 72, 63, 0.09); border-color: var(--red); }
-  .clear.armed { background: var(--red); color: var(--cream-2); border-color: var(--red); }
   .clear:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
   .keeps {
