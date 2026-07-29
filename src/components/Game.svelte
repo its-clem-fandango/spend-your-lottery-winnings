@@ -13,7 +13,6 @@
   import { brokeLine } from '../lib/broke';
   import { encodeRun, decodeRun } from '../lib/share-code';
   import { hasSeenTour, markTourSeen } from '../lib/tour';
-  import { loadRun, saveRun, clearRun } from '../lib/persist';
   import {
     indexItems, spent as spentOf, remaining as remainingOf,
     itemCount, addItem, removeItem, clearCart, isStuck, ranked
@@ -66,10 +65,18 @@
   let flashTimer: ReturnType<typeof setTimeout> | undefined;
 
   /**
-   * One restore, once. A shared link wins on the visit that carries it, then
-   * the query is stripped — otherwise ?r= would keep winning over your own
-   * saved progress on every later refresh, silently discarding anything you
-   * bought after opening the link.
+   * One restore, once, and only from a shared link. Refresh is deliberately
+   * how you start again: the board has three ways to empty a cart now, so
+   * reload no longer has to double as the escape hatch, and landing back on
+   * the entry screen is what people expect a refresh to do.
+   *
+   * It also means the first paint is already the right screen. Nothing here
+   * can run before the server-rendered HTML is on screen, so anything this
+   * effect decides is a visible swap — restoring a saved run from storage
+   * showed the entry screen for a beat and then replaced it.
+   *
+   * The query is still stripped once a link is consumed, so the run you're
+   * looking at is yours to change rather than something ?r= keeps reasserting.
    */
   let hydrated = false;
   $effect(() => {
@@ -77,28 +84,14 @@
     hydrated = true;
 
     const code = new URLSearchParams(window.location.search).get('r');
-    if (code) {
-      const run = decodeRun(code, items);
-      if (run) {
-        state = { gross: run.gross, taxed: run.taxed, total: run.total, cart: run.cart, order: run.order };
-        started = true;
-        history.replaceState(null, '', window.location.pathname);
-        return;
-      }
-    }
+    if (!code) return;
 
-    const saved = loadRun(items);
-    if (saved) {
-      state = saved;
+    const run = decodeRun(code, items);
+    if (run) {
+      state = { gross: run.gross, taxed: run.taxed, total: run.total, cart: run.cart, order: run.order };
       started = true;
+      history.replaceState(null, '', window.location.pathname);
     }
-  });
-
-  /* Refresh stops being how you reset. Guarded on started so the one run at
-     boot, with the blank state, doesn't wipe what we just restored. */
-  $effect(() => {
-    if (!started) return;
-    saveRun($state.snapshot(state));
   });
 
   $effect(() => {
@@ -127,7 +120,6 @@
     summaryReturn = null; // the button it points at is about to be unmounted
     started = false;
     state = { gross: 0, taxed: false, total: 0, cart: {}, order: [] };
-    clearRun();
     history.replaceState(null, '', window.location.pathname);
     window.scrollTo(0, 0);
   }

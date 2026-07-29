@@ -162,13 +162,17 @@ test.describe('going into the red', () => {
     await expect(page.locator('.card[data-id="aspen-chalet"] .qty')).toHaveText('1');
   });
 
-  test('a deficit survives a refresh', async ({ page }) => {
+  /* A deficit used to be checked across a reload, back when a run outlived the
+     page. Refresh is the reset now, so the equivalent question is whether the
+     banner survives the thing that actually redraws it: the run continuing. */
+  test('a deficit outlasts further spending', async ({ page }) => {
     await startGame(page);
     await page.locator('.card[data-id="aspen-chalet"] .hit').click();
     await setWinnings(page, '100000');
     const line = await banner(page).textContent();
 
-    await page.reload();
+    // Refused, because there is nothing left to spend — the banner stands.
+    await page.locator('.card[data-id="camry"] .hit').click();
 
     await expect(remaining(page)).toHaveText(/^-\$/);
     await expect(banner(page)).toHaveText(line!);

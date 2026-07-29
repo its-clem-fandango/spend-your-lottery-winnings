@@ -73,10 +73,8 @@ test.describe('how-to-play tour', () => {
     await page.getByRole('button', { name: /skip the tour/i }).click();
     await expect(page.locator('.tour')).toHaveCount(0);
 
-    // Even skipped counts as seen: restart and it stays away. A refresh alone
-    // now resumes the run, so drop the saved run to get a genuine fresh start —
-    // what's under test here is the tour flag outliving it.
-    await page.evaluate(() => localStorage.removeItem('lottery.run.v1'));
+    // Even skipped counts as seen: refresh back to the landing page, start
+    // another run, and it stays away. The tour flag outlives the run.
     await page.reload();
     await expect(page.locator('.entry[data-ready]')).toBeAttached();
     const field = page.locator('#amount');

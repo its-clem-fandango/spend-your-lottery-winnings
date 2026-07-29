@@ -139,9 +139,10 @@ would need on-demand rendering — add `@astrojs/vercel`, a `/og/[code].png` end
 
 E2E covers the entry flow, tax toggle, image formats and lazy-loading attributes, cart
 arithmetic, the overspend refusal and recovery, share-link round-trip, junk-code
-fallback, keyboard operation, sticky-header alignment, and the how-to-play tour
+fallback, keyboard operation, sticky-header alignment, the how-to-play tour
 (auto-run once, skip persistence, replay from the help button, keyboard control,
-absent on shared links).
+absent on shared links), and that a refresh returns to the landing page without
+the board flashing into view first.
 
 In a sandbox without downloadable browsers, set `CHROMIUM_PATH` to an existing Chromium
 binary.
