@@ -123,13 +123,20 @@
   });
 
   let pct = $derived(total ? Math.max(0, Math.min(100, (spent / total) * 100)) : 0);
+
+  /* Published to CSS so the phone layout can reserve each figure's column from
+     the jackpot instead of from whatever is rolling through it this frame. All
+     three numbers are bounded by the winnings — Winnings *is* it, Spent climbs
+     to it, Remaining starts there — so this is the widest any of them gets, and
+     it only changes when the jackpot does. See the grid in the stylesheet. */
+  let figLen = $derived(money(total).length);
 </script>
 
 <header class="topbar" bind:this={bar}>
   <div class="inner">
     <div class="brand">Spend Your<br /><span>Lottery Winnings</span></div>
 
-    <dl class="stats" data-tour="stats">
+    <dl class="stats" data-tour="stats" style="--fig-len:{figLen}">
       <div class="stat">
         <dt>Winnings</dt>
         <dd>
@@ -195,11 +202,13 @@
     background: var(--green-800);
     color: var(--cream-2);
     box-shadow: 0 10px 30px -18px rgba(8, 37, 28, 0.9);
+    /* Named because the stats grid below has to do arithmetic with it. */
+    --pad: clamp(14px, 3vw, 28px);
   }
   .inner {
     max-width: 1180px;
     margin: 0 auto;
-    padding: 14px clamp(14px, 3vw, 28px) 0;
+    padding: 14px var(--pad) 0;
     display: flex;
     align-items: center;
     gap: clamp(10px, 3vw, 32px);
@@ -246,13 +255,33 @@
      were getting, and min-width:0 let them shrink past their own text and print
      over each other. Their own row is the only place they fit at full precision.
      Ordered after the buttons rather than moved in the markup, so the tab order
-     on a desktop single line still runs left to right. */
+     on a desktop single line still runs left to right.
+
+     Grid, not flex, and that is the whole point. Content-sized columns meant the
+     row was re-laid out by its own contents sixty times a second while the
+     counters rolled: Fraunces has no tabular figures (font-variant-numeric is a
+     no-op in it — its "1" and its "0" differ by a quarter of their width), so
+     every frame of the tween was a different width. The stats slid sideways the
+     whole way down, and at the frame the total crossed the line the third one
+     wrapped to a second row and the header grew 46px — under a finger that had
+     just tapped, with the board jumping down to match. Fixed tracks cannot wrap
+     and cannot move, so the only thing that changes while you spend is the
+     digits. */
   @media (max-width: 799px) {
     .stats {
       order: 1;
       flex-basis: 100%;
-      justify-content: space-between;
+      display: grid;
+      /* Remaining takes the extra: it is the number the game is about, and it
+         is the one that has to hold "Nope. You're broke." */
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+      gap: 3px 10px;
+      /* One 1fr track, which is what the two plain figures get. */
+      --track: calc((100vw - 2 * var(--pad) - 20px) / 3.2);
     }
+    /* Brand left, controls right. They were sharing the left edge with nothing
+       but 95px of empty green after them. */
+    .help { margin-left: auto; }
   }
   .stat { min-width: 0; }
   .stat dt {
@@ -278,6 +307,30 @@
     text-overflow: ellipsis;
   }
 
+  /* Sized to the jackpot rather than to the viewport, so a run renders only as
+     small as its own longest figure requires — a $2M game keeps the full-size
+     number a $500M one cannot have, and neither of them changes size mid-play.
+     0.64em per character is the widest run Fraunces sets at this weight: its
+     zero is its widest digit, and round jackpots are nothing but zeroes. Below
+     the 13px floor the ellipsis above takes over, which is the same last resort
+     this row has always fallen back on.
+
+     Kept here rather than in the layout block above because it has to outrank
+     the plain `.stat dd` rule it overrides, and they carry equal specificity —
+     up there it lost on source order and the figures ran out of their tracks. */
+  @media (max-width: 799px) {
+    .stat dd {
+      font-size: clamp(13px, min(4.9vw, calc(var(--track) / (var(--fig-len) * 0.64))), 30px);
+    }
+    /* Qualified so it beats `.stat dd`, which the bare `.broke-copy` below
+       never did — the punchline has been rendering at the figure's size all
+       along, and at 19px it was what pushed the row onto a second line. 9.7em
+       is the copy's own measured width, so it lands inside its track. */
+    .stat.remaining dd.broke-copy {
+      font-size: clamp(10px, min(3.4vw, calc(var(--track) * 1.2 / 9.7)), 22px);
+    }
+  }
+
   /* Reads as the number it replaces, with just enough of a hint to be findable. */
   .edit-winnings {
     background: none;
@@ -291,8 +344,9 @@
     transition: color 0.15s ease, border-color 0.15s ease;
   }
   .edit-winnings:hover { color: var(--gold); border-bottom-color: var(--gold); }
-  /* On a phone the winnings figure shrinks to ~19px, which left the only
-     control in the stats row 22px tall. The dd clips its overflow for the
+  /* On a phone the winnings figure shrinks to 19px or less — as little as 13px
+     on a wide jackpot, now that it is sized to fit its track — which left the
+     only control in the stats row 22px tall. The dd clips its overflow for the
      ellipsis below, so a pseudo-element reaching outside it would be clipped
      for hit-testing too — the box itself has to grow. 24px is the floor a
      pointer target is owed (WCAG 2.5.8); a full 44 would mean a taller topbar
@@ -342,9 +396,11 @@
     place-items: center;
     transition: border-color 0.18s ease, transform 0.18s ease;
   }
-  .help:hover {
-    border-color: var(--gold);
-    transform: translateY(-1px);
+  @media (hover: hover) and (pointer: fine) {
+    .help:hover {
+      border-color: var(--gold);
+      transform: translateY(-1px);
+    }
   }
 
   .cart {
@@ -359,7 +415,11 @@
     border: 1px solid rgba(139, 94, 18, 0.5);
     box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.85), 0 4px 14px -4px rgba(232, 183, 60, 0.7);
   }
-  .cart:hover { transform: translateY(-2px); }
+  /* Ungated hover here would stick after every tap, and the cart is the one
+     button on the board that gets tapped over and over. */
+  @media (hover: hover) and (pointer: fine) {
+    .cart:hover { transform: translateY(-2px); }
+  }
   .count {
     position: absolute;
     top: -6px; right: -6px;
@@ -384,7 +444,7 @@
     100% { transform: scale(1); }
   }
 
-  .progress { max-width: 1180px; margin: 12px auto 0; padding: 0 clamp(14px, 3vw, 28px) 12px; }
+  .progress { max-width: 1180px; margin: 12px auto 0; padding: 0 var(--pad) 12px; }
 
   /* Empty and unstyled while solvent: no background, no padding, so a flex box
      with no children takes up no height and the banner still reads as arriving
@@ -399,7 +459,7 @@
   }
   .debt.on {
     background: var(--red);
-    padding: 7px clamp(14px, 3vw, 28px);
+    padding: 7px var(--pad);
     animation: debt-in 0.28s ease;
   }
   .debt strong { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }

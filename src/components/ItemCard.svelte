@@ -107,10 +107,17 @@
       opacity 0.2s ease;
     will-change: transform;
   }
-  .card:hover {
-    transform: translateY(-5px) rotate(-0.5deg);
-    box-shadow: var(--shadow-md);
-    border-color: rgba(232, 183, 60, 0.75);
+  /* Gated on a real pointer. A phone keeps :hover on the last thing you tapped,
+     so on touch this lift used to stick: tap the Camry and it sits 5px above
+     the jet ski beside it, tilted, until you tap elsewhere. The two cards are
+     grid siblings and share a row — nothing but a transform can misalign them,
+     and this was it. :active still fires on touch and is the honest feedback. */
+  @media (hover: hover) and (pointer: fine) {
+    .card:hover {
+      transform: translateY(-5px) rotate(-0.5deg);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(232, 183, 60, 0.75);
+    }
   }
   .card:active { transform: translateY(-1px) scale(0.99); }
   /* Owning a thing gilds it. Obviously. */
@@ -152,9 +159,11 @@
     transform: translateX(-130%);
     pointer-events: none;
   }
-  .card:hover .media::after {
-    transition: transform 0.7s ease;
-    transform: translateX(130%);
+  @media (hover: hover) and (pointer: fine) {
+    .card:hover .media::after {
+      transition: transform 0.7s ease;
+      transform: translateX(130%);
+    }
   }
   .media img {
     display: block;
@@ -163,7 +172,11 @@
     object-fit: cover;
     transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .card:hover .media img { transform: scale(1.06); }
+  /* Gated too: left on, a stuck hover holds the artwork at 1.06 and the pop
+     animation below — the touch feedback for the same tap — plays against it. */
+  @media (hover: hover) and (pointer: fine) {
+    .card:hover .media img { transform: scale(1.06); }
+  }
 
   .card.pop .media img { animation: pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); }
   @keyframes pop {

@@ -186,7 +186,9 @@
     white-space: nowrap;
     transition: transform 0.14s ease, background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
   }
-  .tab:hover { transform: translateY(-1px); border-color: var(--green-700); color: var(--ink); }
+  @media (hover: hover) and (pointer: fine) {
+    .tab:hover { transform: translateY(-1px); border-color: var(--green-700); color: var(--ink); }
+  }
   .tab[aria-current='true'] {
     background: var(--foil-btn);
     border-color: var(--gold-deep);
@@ -237,7 +239,9 @@
     border: 1px solid rgba(139, 94, 18, 0.5);
     box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.85);
   }
-  .end-done:hover { transform: translateY(-2px); }
+  @media (hover: hover) and (pointer: fine) {
+    .end-done:hover { transform: translateY(-2px); }
+  }
   .end-note { margin: 12px 0 0; font-size: 13.5px; color: rgba(10, 31, 24, 0.6); }
 
   /* Collapsed by default — an obligation to meet, not something to read. */

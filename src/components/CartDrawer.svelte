@@ -121,7 +121,9 @@
     gap: 12px;
   }
   .head h2 { font-family: var(--display); font-weight: 900; font-size: 26px; margin: 0; letter-spacing: -0.025em; }
-  .close:hover { transform: rotate(90deg); }
+  @media (hover: hover) and (pointer: fine) {
+    .close:hover { transform: rotate(90deg); }
+  }
 
   .list { flex: 1; overflow-y: auto; padding: 8px 20px 20px; margin: 0; list-style: none; }
   .empty { padding: 52px 24px; text-align: center; color: rgba(10, 31, 24, 0.7); font-size: 16px; line-height: 1.6; }
@@ -191,7 +193,9 @@
     border: 1px solid rgba(139, 94, 18, 0.5);
     box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.85), 0 8px 20px -8px rgba(232, 183, 60, 0.8);
   }
-  .done:hover { transform: translateY(-2px); }
+  @media (hover: hover) and (pointer: fine) {
+    .done:hover { transform: translateY(-2px); }
+  }
 
   .clear {
     flex: 0 0 auto;

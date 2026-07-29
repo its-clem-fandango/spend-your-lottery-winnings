@@ -147,7 +147,9 @@
     margin: 0;
   }
   .close { background: transparent; color: var(--cream-2); border: 1.5px solid rgba(246, 239, 223, 0.3); }
-  .close:hover { transform: rotate(90deg); border-color: var(--gold); }
+  @media (hover: hover) and (pointer: fine) {
+    .close:hover { transform: rotate(90deg); border-color: var(--gold); }
+  }
 
   .detail {
     margin: 13px 0 0;
@@ -211,7 +213,9 @@
     border: 1px solid rgba(139, 94, 18, 0.5);
     box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.85);
   }
-  .apply:hover:not(:disabled) { transform: translateY(-2px); }
+  @media (hover: hover) and (pointer: fine) {
+    .apply:hover:not(:disabled) { transform: translateY(-2px); }
+  }
 
   .tertiary {
     display: flex;
