@@ -40,6 +40,7 @@
 
   let board = $state<Board | null>(null);
   let topbar = $state<Topbar | null>(null);
+  let cartDrawer = $state<CartDrawer | null>(null);
   let root = $state<HTMLElement | null>(null);
   let summaryReturn = $state<HTMLElement | null>(null);
 
@@ -76,18 +77,30 @@
    */
   const UNDO_MS = 6000;
   let undone = $state<{ cart: Cart; order: string[] } | null>(null);
-  let undoCount = $state(0); // kept past the dismissal so the toast can animate out
-  let undoBtn = $state<HTMLButtonElement | null>(null);
+  let undoCount = $state(0); // survives the dismissal so the line can't flash "0 things"
   let undoTimer: ReturnType<typeof setTimeout> | undefined;
+  /* Spoken, not shown. The two visible copies live inline in the drawer and at
+     the end of the board; this is the one that announces, so a screen reader
+     hears it once however many surfaces are currently rendering it. */
   let undoLine = $derived(
     `Cart cleared. ${undoCount} ${undoCount === 1 ? 'thing' : 'things'} back on the shelf.`
   );
+
+  /**
+   * The offer is inline now — it appears where the Clear button was rather than
+   * floating over the board — so it renders in whichever of the two surfaces you
+   * can actually see: the drawer while it's open, the end of the board when it
+   * isn't. Never both, which is what lets this return "the" undo button.
+   */
+  function undoElement(): HTMLButtonElement | null {
+    return (cartOpen ? cartDrawer?.undoElement() : board?.undoElement()) ?? null;
+  }
 
   /* Focus lands on Undo because the button that was just pressed unmounts with
      the cart it emptied — without this the keyboard is left on <body> and the
      one control that undoes the damage is a full tab cycle away. */
   $effect(() => {
-    if (undone) undoBtn?.focus();
+    if (undone) undoElement()?.focus();
   });
 
   $effect(() => () => clearTimeout(undoTimer));
@@ -184,6 +197,17 @@
     dismissUndo();
   }
 
+  /**
+   * Wiping from the winnings dialog opens the drawer on the way out. The offer
+   * is inline now, so it has to land somewhere you are actually looking — and
+   * this dialog dismisses itself on clear, taking its own footing with it.
+   */
+  function wipeFromWinnings() {
+    clear();
+    winningsOpen = false;
+    cartOpen = true;
+  }
+
   /** Restarted on blur too, so the window is time you actually had it in front
       of you rather than time that ran out while the button held focus. */
   function armUndo() {
@@ -196,7 +220,8 @@
     if (!undone) return;
     // Hand focus back before the button goes, to the one anchor that's present
     // and reachable in all three of the places clearing is offered from.
-    if (undoBtn && document.activeElement === undoBtn) topbar?.cartElement()?.focus();
+    const el = undoElement();
+    if (el && document.activeElement === el) topbar?.cartElement()?.focus();
     undone = null;
   }
 
@@ -330,9 +355,14 @@
       {remaining}
       {count}
       {spent}
+      {undoCount}
+      undone={!!undone && !cartOpen}
       onadd={add}
       onremove={remove}
       onclear={clear}
+      onundo={undo}
+      onundofocus={() => clearTimeout(undoTimer)}
+      onundoblur={armUndo}
       ondone={() => openSummary()}
     />
 
@@ -345,16 +375,22 @@
   <div class="flash" class:on={flashing} aria-hidden="true"></div>
 
   <CartDrawer
+    bind:this={cartDrawer}
     open={cartOpen}
     order={state.order}
     cart={state.cart}
     {index}
     {images}
     {spent}
+    {undoCount}
+    undone={!!undone && cartOpen}
     onclose={closeCart}
     onadd={(id) => add(id)}
     onremove={remove}
     onclear={clear}
+    onundo={undo}
+    onundofocus={() => clearTimeout(undoTimer)}
+    onundoblur={armUndo}
     ondone={() => { cartOpen = false; openSummary(topbar?.cartElement()); }}
   />
 
@@ -379,32 +415,16 @@
     {count}
     onapply={applyWinnings}
     onclose={() => (winningsOpen = false)}
-    onclear={() => { clear(); winningsOpen = false; }}
+    onclear={wipeFromWinnings}
     onrestart={restart}
   />
 
   <Tour open={tourOpen} onclose={() => (tourOpen = false)} />
 
-  <!-- Outside .game, and last, so it sits over the drawer it's usually launched
-       from. inert (not just hidden) while it's away, or Undo would stay in the
-       tab order pointing at a cart nobody cleared. -->
-  <div class="undo" class:on={!!undone} inert={!undone}>
-    <p aria-hidden="true">{undoLine}</p>
-    <button
-      class="btn take-back"
-      type="button"
-      bind:this={undoBtn}
-      aria-label="Undo clearing the cart"
-      onfocus={() => clearTimeout(undoTimer)}
-      onblur={armUndo}
-      onclick={undo}
-    >
-      Undo
-    </button>
-  </div>
-
-  <!-- Announced from out here rather than off the toast itself, which is inert
-       between clears and so isn't in the accessibility tree to speak up from. -->
+  <!-- The offer itself is rendered inline by Board and CartDrawer. This is only
+       its voice: a live region that has been mounted all along, because one
+       inserted together with its first content is routinely missed by NVDA and
+       JAWS — and it would be the moment the app most wants to be heard. -->
   <span class="vh" role="status">{undone ? undoLine : ''}</span>
 {/if}
 
@@ -463,41 +483,4 @@
   .nudge p { margin: 0; font-size: 16px; line-height: 1.35; }
   .go { background: var(--gold); color: var(--green-900); padding: 10px 18px; font-size: 15.5px; flex: none; }
 
-  /* Same seat as the nudge, which is free by definition: the nudge only appears
-     with something in the cart, and this only appears with nothing in it. */
-  .undo {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    width: max-content;
-    /* Against the inset box, not the viewport: percentages on a fixed element
-       resolve against the initial containing block, so `100%` here would be the
-       full 390px and put the edges back outside the 12px gutters. */
-    max-width: calc(100vw - 24px);
-    margin-inline: auto;
-    bottom: calc(18px + env(safe-area-inset-bottom));
-    transform: translateY(140%);
-    z-index: 75;
-    background: var(--green-800);
-    color: var(--cream-2);
-    border: 1px solid rgba(232, 183, 60, 0.55);
-    border-radius: var(--r-pill);
-    padding: 11px 12px 11px 20px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    box-shadow: var(--shadow-lg);
-    transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
-  }
-  .undo.on { transform: translateY(0); }
-  .undo p { margin: 0; font-size: 16px; line-height: 1.35; }
-  .take-back {
-    background: var(--gold);
-    color: var(--green-900);
-    padding: 10px 20px;
-    font-size: 15.5px;
-    font-weight: 900;
-    flex: none;
-  }
-  .take-back:focus-visible { outline: 2px solid var(--cream-2); outline-offset: 3px; }
 </style>

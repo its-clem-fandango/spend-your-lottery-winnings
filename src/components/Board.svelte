@@ -15,11 +15,24 @@
     onremove: (id: string) => void;
     onclear: () => void;
     ondone: () => void;
+    /** A clear is still take-back-able. Owned by Game, shown here in place. */
+    undone: boolean;
+    undoCount: number;
+    onundo: () => void;
+    onundofocus: () => void;
+    onundoblur: () => void;
   }
   let {
-    items, categories, images, cart, remaining, count, spent,
-    onadd, onremove, onclear, ondone
+    items, categories, images, cart, remaining, count, spent, undone, undoCount,
+    onadd, onremove, onclear, ondone, onundo, onundofocus, onundoblur
   }: Props = $props();
+
+  let undoBtn = $state<HTMLButtonElement | null>(null);
+
+  /** Game hands focus here when a clear lands with the drawer shut. */
+  export function undoElement() {
+    return undoBtn;
+  }
 
   /* CC BY and CC BY-SA oblige us to name the photographer. Storing the credit
      in items.json isn't crediting anyone — it has to be somewhere a person can
@@ -126,6 +139,25 @@
         <button class="btn end-done" type="button" onclick={ondone}>See the damage</button>
       </div>
       <p class="end-note">Clearing empties the cart. Your winnings stay put.</p>
+    {:else if undone}
+      <!-- Where the Clear button just was. Clearing from down here used to throw
+           a toast over the bottom of the screen; now the paragraph you were
+           reading answers you, and puts the way back under your thumb. -->
+      <p class="end-line">
+        <strong>Cart cleared.</strong>
+        {undoCount} {undoCount === 1 ? 'thing' : 'things'} back on the shelf.
+      </p>
+      <div class="end-actions">
+        <button
+          class="btn end-undo"
+          type="button"
+          bind:this={undoBtn}
+          aria-label="Undo clearing the cart"
+          onfocus={onundofocus}
+          onblur={onundoblur}
+          onclick={onundo}
+        >Undo</button>
+      </div>
     {:else}
       <p class="end-line">
         <strong>That's the whole board.</strong>
@@ -243,6 +275,19 @@
     .end-done:hover { transform: translateY(-2px); }
   }
   .end-note { margin: 12px 0 0; font-size: 13.5px; color: rgba(10, 31, 24, 0.6); }
+
+  /* Same shape as .end-done — this is the primary action for as long as it's on
+     offer, and it's the only one in its row. */
+  .end-undo {
+    background: var(--foil-btn);
+    color: var(--green-900);
+    font-weight: 900;
+    border: 1px solid rgba(139, 94, 18, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.85);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .end-undo:hover { transform: translateY(-2px); }
+  }
 
   /* Collapsed by default — an obligation to meet, not something to read. */
   .credits { margin-top: 26px; font-size: 13.5px; }
