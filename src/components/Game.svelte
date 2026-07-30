@@ -428,25 +428,38 @@
   }
   .flash.on { opacity: 1; }
 
+  /* left/right rather than the usual left:50% + translateX(-50%). A fixed box
+     positioned only from the left edge gets its available width measured from
+     that edge to the viewport's — so left:50% quietly capped this at half the
+     screen, and `max-width: calc(100vw - 24px)` never once applied. On a 390px
+     phone the toast was 195px wide with its sentence broken over seven lines.
+     Pinning both edges and letting auto margins do the centring gives it the
+     full width it was always asking for; the transform is left to the slide. */
   .nudge {
     position: fixed;
-    left: 50%;
+    left: 12px;
+    right: 12px;
+    width: max-content;
+    /* Against the inset box, not the viewport: percentages on a fixed element
+       resolve against the initial containing block, so `100%` here would be the
+       full 390px and put the edges back outside the 12px gutters. */
+    max-width: calc(100vw - 24px);
+    margin-inline: auto;
     bottom: calc(18px + env(safe-area-inset-bottom));
-    transform: translate(-50%, 140%);
+    transform: translateY(140%);
     z-index: 45;
     background: var(--green-800);
     color: var(--cream-2);
     border: 1px solid rgba(232, 183, 60, 0.55);
-    border-radius: 999px;
+    border-radius: var(--r-pill);
     padding: 11px 12px 11px 20px;
     display: flex;
     align-items: center;
     gap: 14px;
     box-shadow: var(--shadow-lg);
     transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
-    max-width: calc(100vw - 24px);
   }
-  .nudge.on { transform: translate(-50%, 0); }
+  .nudge.on { transform: translateY(0); }
   .nudge p { margin: 0; font-size: 16px; line-height: 1.35; }
   .go { background: var(--gold); color: var(--green-900); padding: 10px 18px; font-size: 15.5px; flex: none; }
 
@@ -454,23 +467,29 @@
      with something in the cart, and this only appears with nothing in it. */
   .undo {
     position: fixed;
-    left: 50%;
+    left: 12px;
+    right: 12px;
+    width: max-content;
+    /* Against the inset box, not the viewport: percentages on a fixed element
+       resolve against the initial containing block, so `100%` here would be the
+       full 390px and put the edges back outside the 12px gutters. */
+    max-width: calc(100vw - 24px);
+    margin-inline: auto;
     bottom: calc(18px + env(safe-area-inset-bottom));
-    transform: translate(-50%, 140%);
+    transform: translateY(140%);
     z-index: 75;
     background: var(--green-800);
     color: var(--cream-2);
     border: 1px solid rgba(232, 183, 60, 0.55);
-    border-radius: 999px;
+    border-radius: var(--r-pill);
     padding: 11px 12px 11px 20px;
     display: flex;
     align-items: center;
     gap: 14px;
     box-shadow: var(--shadow-lg);
     transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
-    max-width: calc(100vw - 24px);
   }
-  .undo.on { transform: translate(-50%, 0); }
+  .undo.on { transform: translateY(0); }
   .undo p { margin: 0; font-size: 16px; line-height: 1.35; }
   .take-back {
     background: var(--gold);

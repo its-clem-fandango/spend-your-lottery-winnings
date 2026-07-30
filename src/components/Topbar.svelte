@@ -272,13 +272,25 @@
       order: 1;
       flex-basis: 100%;
       display: grid;
-      /* Remaining takes the extra: it is the number the game is about, and it
-         is the one that has to hold "Nope. You're broke." */
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+      /* Even thirds, and the evenness is load-bearing. Winnings and Remaining
+         both hold a figure as long as the jackpot, and they are anchored to
+         opposite edges — so the moment their tracks differ, the slack lands on
+         one side of Spent and not the other and the row reads as lopsided. With
+         all three equal the two gaps around Spent are identical whatever it
+         currently reads, and no track is narrower than the figure it must hold. */
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 3px 10px;
-      /* One 1fr track, which is what the two plain figures get. */
-      --track: calc((100vw - 2 * var(--pad) - 20px) / 3.2);
+      --track: calc((100vw - 2 * var(--pad) - 20px) / 3);
     }
+    /* Left, centre, right. The tracks are fixed but the figures inside them are
+       not the same length, so aligning all three to the left put a 14px gap
+       after one and a 57px gap after the next — the row read as badly spaced
+       even though the columns were even. Anchoring the outer two to the edges
+       and centring the middle spreads the slack evenly between them and lands
+       the row flush at both ends, under the brand and the cart button. */
+    .stat:nth-child(2) { text-align: center; }
+    .stat.remaining { text-align: right; }
+
     /* Brand left, controls right. They were sharing the left edge with nothing
        but 95px of empty green after them. */
     .help { margin-left: auto; }
@@ -327,7 +339,7 @@
        along, and at 19px it was what pushed the row onto a second line. 9.7em
        is the copy's own measured width, so it lands inside its track. */
     .stat.remaining dd.broke-copy {
-      font-size: clamp(10px, min(3.4vw, calc(var(--track) * 1.2 / 9.7)), 22px);
+      font-size: clamp(10px, min(3.4vw, calc(var(--track) / 9.7)), 22px);
     }
   }
 
@@ -337,7 +349,17 @@
     border: 0;
     padding: 0;
     margin: 0;
+    /* `font: inherit` is here for the size and line-height, but the shorthand
+       also resets family and weight — and being scoped, it outranked the `.num`
+       class this button carries. So the winnings figure has been sitting in
+       Inter 400 this whole time while Spent and Remaining sat in Fraunces 900:
+       same size, visibly different type. It also rendered 13px narrower than the
+       track reserved for it, which is what made the row look unevenly spaced.
+       The longhands go after the shorthand on purpose — they undo its damage. */
     font: inherit;
+    font-family: var(--display);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
     color: inherit;
     cursor: pointer;
     border-bottom: 1.5px dashed rgba(246, 239, 223, 0.3);
