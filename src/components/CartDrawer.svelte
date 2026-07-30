@@ -14,13 +14,30 @@
     onremove: (id: string) => void;
     onclear: () => void;
     ondone: () => void;
+    /** A clear is still take-back-able. Owned by Game, shown here in place. */
+    undone: boolean;
+    undoCount: number;
+    onundo: () => void;
+    onundofocus: () => void;
+    onundoblur: () => void;
   }
-  let { open, order, cart, index, images, spent, onclose, onadd, onremove, onclear, ondone }: Props = $props();
+  let {
+    open, order, cart, index, images, spent, undone, undoCount,
+    onclose, onadd, onremove, onclear, ondone, onundo, onundofocus, onundoblur
+  }: Props = $props();
 
   let closeBtn = $state<HTMLButtonElement | null>(null);
+  let undoBtn = $state<HTMLButtonElement | null>(null);
 
+  /** Game hands focus here when a clear lands while this drawer is the one on screen. */
+  export function undoElement() {
+    return undoBtn;
+  }
+
+  /* Not while an undo is on offer: that would pull focus off the one control
+     that takes the clear back, which is the whole reason it's there. */
   $effect(() => {
-    if (open) closeBtn?.focus();
+    if (open && !undone) closeBtn?.focus();
   });
 </script>
 
@@ -73,14 +90,31 @@
       <span>Total spent</span>
       <strong>{money(spent)}</strong>
     </div>
+    <!-- The offer takes the Clear button's own seat rather than floating over the
+         board: you pressed here, so the way back is here. Red becomes gold, the
+         fine print becomes the receipt, and nothing else on screen moves. -->
     <div class="buttons">
       {#if order.length}
         <button class="btn clear" type="button" onclick={onclear}>Clear cart</button>
+      {:else if undone}
+        <button
+          class="btn take-back"
+          type="button"
+          bind:this={undoBtn}
+          aria-label="Undo clearing the cart"
+          onfocus={onundofocus}
+          onblur={onundoblur}
+          onclick={onundo}
+        >Undo</button>
       {/if}
       <button class="btn done" type="button" onclick={ondone}>I'm done spending</button>
     </div>
     {#if order.length}
       <p class="keeps">Clearing empties the cart. Your winnings stay put.</p>
+    {:else if undone}
+      <p class="keeps cleared" aria-hidden="true">
+        {undoCount} {undoCount === 1 ? 'thing' : 'things'} back on the shelf.
+      </p>
     {/if}
   </div>
 </aside>
@@ -212,10 +246,31 @@
   .clear:hover { background: rgba(216, 72, 63, 0.09); border-color: var(--red); }
   .clear:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
+  /* Takes .clear's seat and its outlined weight — gold here would put two foil
+     slabs side by side and leave you guessing which one the row is for. Undo is
+     the way back, not the way on. */
+  .take-back {
+    flex: 0 0 auto;
+    background: transparent;
+    border: 1.5px solid var(--gold-deep);
+    color: var(--ink);
+    padding: 16px 22px;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 999px;
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .take-back:hover { background: rgba(232, 183, 60, 0.14); }
+  }
+  .take-back:focus-visible { outline: 2px solid var(--gold-deep); outline-offset: 2px; }
+
   .keeps {
     margin: 10px 0 0;
     text-align: center;
     font-size: 13px;
     color: rgba(10, 31, 24, 0.6);
   }
+  .keeps.cleared { color: rgba(10, 31, 24, 0.78); font-weight: 600; }
 </style>

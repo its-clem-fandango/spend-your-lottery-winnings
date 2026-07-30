@@ -194,7 +194,10 @@ test.describe('going into the red', () => {
   });
 });
 
-const toast = (page: Page) => page.locator('.undo.on');
+/* The offer is inline rather than a toast: it takes the Clear button's own seat
+   in whichever surface you cleared from — the drawer while it's open, the end of
+   the board when it isn't. Only ever one of them, so this matches either. */
+const offer = (page: Page) => page.getByRole('button', { name: /undo clearing the cart/i });
 
 test.describe('clearing the cart', () => {
   test('empties everything on one press', async ({ page }) => {
@@ -212,7 +215,9 @@ test.describe('clearing the cart', () => {
     // The badge is always in the DOM, just scaled away — so check the count.
     await expect(page.locator('.card[data-id="camry"] .qty')).toHaveText('0');
     await expect(page.locator('.card[data-id="camry"]')).not.toHaveClass(/owned/);
-    await expect(toast(page)).toContainText(/2 things back on the shelf/i);
+    // The fine print under the buttons becomes the receipt for what just went.
+    await expect(drawer.locator('.keeps')).toContainText(/2 things back on the shelf/i);
+    await expect(offer(page)).toBeVisible();
   });
 
   test('undo puts the cart back exactly as it was', async ({ page }) => {
@@ -223,18 +228,23 @@ test.describe('clearing the cart', () => {
     await page.getByRole('button', { name: /^Cart/ }).click();
 
     const drawer = page.locator('.drawer');
-    const spentBefore = await page.locator('.stat').nth(1).locator('dd').textContent();
+    /* Read off the drawer's total, not the topbar's. The topbar figure is
+       tweened, so a plain textContent() read can land on a frame mid-roll and
+       pin the assertion below to a number the counter was only passing through
+       — which is exactly how this test went flaky in CI. This one is the real
+       value, written straight from state. */
+    const spentBefore = await drawer.locator('.total strong').textContent();
     await drawer.getByRole('button', { name: /^clear cart$/i }).click();
     await expect(page.locator('.stat').nth(1).locator('dd')).toHaveText('$0');
 
-    await page.getByRole('button', { name: /^undo/i }).click();
+    await offer(page).click();
 
     await expect(page.locator('.stat').nth(1).locator('dd')).toHaveText(spentBefore!);
     await expect(page.locator('.card[data-id="camry"] .qty')).toHaveText('2');
     await expect(page.locator('.card[data-id="rolex"] .qty')).toHaveText('1');
     // Order survives the round trip, so the drawer reads the same as before.
     await expect(drawer.locator('.row .main strong').first()).toContainText(/camry/i);
-    await expect(toast(page)).toHaveCount(0);
+    await expect(offer(page)).toHaveCount(0);
   });
 
   /* The offer is the whole safety net now, so it has to land on the one control
@@ -247,7 +257,7 @@ test.describe('clearing the cart', () => {
     await end.scrollIntoViewIfNeeded();
     await end.getByRole('button', { name: /^clear cart$/i }).click();
 
-    await expect(page.getByRole('button', { name: /^undo/i })).toBeFocused();
+    await expect(offer(page)).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.locator('.card[data-id="camry"] .qty')).toHaveText('1');
   });
@@ -258,10 +268,10 @@ test.describe('clearing the cart', () => {
     await page.getByRole('button', { name: /^Cart/ }).click();
     await page.locator('.drawer').getByRole('button', { name: /^clear cart$/i }).click();
 
-    await expect(toast(page)).toBeVisible();
+    await expect(offer(page)).toBeVisible();
     // Focus holds the window open, so hand it somewhere else first.
     await page.locator('.drawer').getByRole('button', { name: /close cart/i }).focus();
-    await expect(toast(page)).toHaveCount(0, { timeout: 10_000 });
+    await expect(offer(page)).toHaveCount(0, { timeout: 10_000 });
     await expect(page.locator('.stat').nth(1).locator('dd')).toHaveText('$0');
   });
 
@@ -272,12 +282,12 @@ test.describe('clearing the cart', () => {
     await page.locator('.card[data-id="camry"] .hit').click();
     await page.getByRole('button', { name: /^Cart/ }).click();
     await page.locator('.drawer').getByRole('button', { name: /^clear cart$/i }).click();
-    await expect(toast(page)).toBeVisible();
+    await expect(offer(page)).toBeVisible();
 
     await page.getByRole('button', { name: /close cart/i }).click();
     await page.locator('.card[data-id="rolex"] .hit').click();
 
-    await expect(toast(page)).toHaveCount(0);
+    await expect(offer(page)).toHaveCount(0);
     await expect(page.locator('.card[data-id="rolex"] .qty')).toHaveText('1');
     await expect(page.locator('.card[data-id="camry"] .qty')).toHaveText('0');
   });
@@ -305,6 +315,15 @@ test.describe('clearing the cart', () => {
 
     await expect(page.locator('.stat').nth(1).locator('dd')).toHaveText('$0');
     await expect(page.locator('.stat').first().locator('dd')).toHaveText('$12,400,000');
+
+    /* The paragraph you were reading answers you, in place — no toast. The
+       offer stands where the Clear button was for as long as it's good for. */
+    await expect(end).toContainText(/2 things back on the shelf/i);
+    await expect(offer(page)).toBeVisible();
+
+    // and the copy settles back once the window lapses. Focus holds it open.
+    await page.getByRole('button', { name: /^Cart/ }).focus();
+    await expect(offer(page)).toHaveCount(0, { timeout: 10_000 });
     await expect(end).toContainText(/picked none of them/i);
   });
 
