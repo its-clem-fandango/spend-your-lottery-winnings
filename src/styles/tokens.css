@@ -30,6 +30,10 @@
   --r-sm: 10px;
   --r-md: 16px;
   --r-lg: 24px;
+  /* Reads as a pill at one line of text and as a rounded card at two, which is
+     what the bottom toasts need: 999px on a wrapped two-line box gives a
+     lozenge with semicircular ends and no straight edge to sit on. */
+  --r-pill: 28px;
 
   --topbar-h: 132px;
 }
