@@ -237,17 +237,31 @@
     .brand { display: block; }
   }
 
-  /* Wraps before it shrinks. Flex shares a shortfall out in proportion to size,
-     so without this a trillion-dollar jackpot takes the row over the edge and
-     "$28,000" loses its tail alongside it — a figure that had room to spare.
-     Dropping a whole stat to the next line keeps every number intact instead. */
+  /* Three fixed tracks at every width, which is the whole fix. This was a
+     wrapping flex row that sized its columns from their contents — and the
+     contents are digits that change sixty times a second. The phone got the
+     grid first; the desktop line kept the old behaviour and kept the old bugs
+     with it. At iPad-portrait width a $500M run put the third figure onto a
+     second line partway through a tween and grew the header 58px under the
+     finger that had just tapped, and at every width above that the three
+     numbers slid sideways for the whole 430ms of the roll.
+
+     Even thirds because Winnings and Remaining both hold a figure as long as
+     the jackpot; anything else lands the slack unevenly around Spent. */
   .stats {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     flex: 1;
-    flex-wrap: wrap;
-    gap: 4px clamp(8px, 3.4vw, 36px);
+    --stat-gap: clamp(8px, 3.4vw, 36px);
+    gap: 4px var(--stat-gap);
     min-width: 0;
     margin: 0;
+    /* Measured so the rule below can ask how wide this box actually came out —
+       it is a flex item here and a full-width row on a phone, and no arithmetic
+       on 100vw gets both right. Safe to contain: flex-basis is 0 and min-width
+       is 0, so this box's width never depended on its contents anyway. */
+    container-type: inline-size;
+    --track: calc((100cqw - 2 * var(--stat-gap)) / 3);
   }
 
   /* Three currency figures plus the help and cart buttons do not fit on one
@@ -271,16 +285,8 @@
     .stats {
       order: 1;
       flex-basis: 100%;
-      display: grid;
-      /* Even thirds, and the evenness is load-bearing. Winnings and Remaining
-         both hold a figure as long as the jackpot, and they are anchored to
-         opposite edges — so the moment their tracks differ, the slack lands on
-         one side of Spent and not the other and the row reads as lopsided. With
-         all three equal the two gaps around Spent are identical whatever it
-         currently reads, and no track is narrower than the figure it must hold. */
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 3px 10px;
-      --track: calc((100vw - 2 * var(--pad) - 20px) / 3);
+      --stat-gap: 10px;
+      gap: 3px var(--stat-gap);
     }
     /* Left, centre, right. The tracks are fixed but the figures inside them are
        not the same length, so aligning all three to the left put a 14px gap
@@ -312,35 +318,30 @@
      away in the winnings dialog and the cart. */
   .stat dd {
     margin: 0;
-    font-size: clamp(16px, 4.9vw, 30px);
+    /* Sized to the jackpot rather than to the viewport, so a run renders only as
+       small as its own longest figure requires — a $2M game keeps the full-size
+       number a $500M one cannot have, and neither changes size mid-play. 0.64em
+       per character is the widest run Fraunces sets at this weight: its zero is
+       its widest digit, and round jackpots are nothing but zeroes. Below the
+       13px floor the truncation above takes over.
+
+       --track is measured off the row itself, so one rule holds whether that
+       row is a full-width grid on a phone or a flex item between the brand and
+       the cart button on a desktop. It is what lets the desktop line stop
+       wrapping without the header having to get taller to compensate. */
+    font-size: clamp(13px, min(4.9vw, calc(var(--track) / (var(--fig-len) * 0.64))), 30px);
     line-height: 1.1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  /* Sized to the jackpot rather than to the viewport, so a run renders only as
-     small as its own longest figure requires — a $2M game keeps the full-size
-     number a $500M one cannot have, and neither of them changes size mid-play.
-     0.64em per character is the widest run Fraunces sets at this weight: its
-     zero is its widest digit, and round jackpots are nothing but zeroes. Below
-     the 13px floor the ellipsis above takes over, which is the same last resort
-     this row has always fallen back on.
-
-     Kept here rather than in the layout block above because it has to outrank
-     the plain `.stat dd` rule it overrides, and they carry equal specificity —
-     up there it lost on source order and the figures ran out of their tracks. */
-  @media (max-width: 799px) {
-    .stat dd {
-      font-size: clamp(13px, min(4.9vw, calc(var(--track) / (var(--fig-len) * 0.64))), 30px);
-    }
-    /* Qualified so it beats `.stat dd`, which the bare `.broke-copy` below
-       never did — the punchline has been rendering at the figure's size all
-       along, and at 19px it was what pushed the row onto a second line. 9.7em
-       is the copy's own measured width, so it lands inside its track. */
-    .stat.remaining dd.broke-copy {
-      font-size: clamp(10px, min(3.4vw, calc(var(--track) / 9.7)), 22px);
-    }
+  /* Qualified so it beats `.stat dd`, which the bare `.broke-copy` below never
+     did — the punchline had been rendering at the figure's size all along, and
+     at 19px it was what pushed the row onto a second line. 9.7em is the copy's
+     own measured width, so it lands inside its track. */
+  .stat.remaining dd.broke-copy {
+    font-size: clamp(10px, min(3.4vw, calc(var(--track) / 9.7)), 22px);
   }
 
   /* Reads as the number it replaces, with just enough of a hint to be findable. */
