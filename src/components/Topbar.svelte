@@ -377,7 +377,14 @@
   @media (max-width: 799px) {
     .edit-winnings {
       display: inline-flex;
-      align-items: center;
+      /* Top, not centre. This box is 24px while its line is ~17.8px, so
+         centring dropped the figure 2.6px below Spent and Remaining — which sit
+         in plain dds with no such box. Three identical numbers on one row, one
+         of them visibly sagging, and the extra space read as a wider gap under
+         the WINNINGS label. Anchoring to the top puts the glyphs back on their
+         neighbours' line and lets the spare height hang underneath, which is
+         where the dashed underline and the thumb want it anyway. */
+      align-items: flex-start;
       min-height: 24px;
     }
   }
