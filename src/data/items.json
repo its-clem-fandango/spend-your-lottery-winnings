@@ -70,8 +70,13 @@
     "price": 106000,
     "category": "cars",
     "blurb": "Silent, enormous, and shaped like a computer mouse.",
-    "image": "mercedes-eqs.png",
-    "imageCredit": null,
+    "image": "mercedes-eqs.jpg",
+    "imageCredit": {
+      "author": "JustAnotherCarDesigner",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Mercedes-Benz_EQS_003.jpg"
+    },
     "priceVerified": "2026-08-02"
   },
   {
@@ -161,8 +166,13 @@
     "price": 1150000,
     "category": "real-estate",
     "blurb": "Walkable, new, and indistinguishable from the unit next door.",
-    "image": "playa-vista.png",
-    "imageCredit": null,
+    "image": "playa-vista.jpg",
+    "imageCredit": {
+      "author": "Downtowngal",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Bluff_Creek_and_Playa_Vista.jpg"
+    },
     "priceVerified": "2026-08-02"
   },
   {
@@ -204,8 +214,13 @@
     "price": 3600000,
     "category": "real-estate",
     "blurb": "The pool is heated. So was the bidding war.",
-    "image": "cheviot-hills.png",
-    "imageCredit": null,
+    "image": "cheviot-hills.jpg",
+    "imageCredit": {
+      "author": "Jfc4me",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:House_in_Cheviot_Hills,_Los_Angeles.JPG"
+    },
     "priceVerified": "2026-08-02"
   },
   {
@@ -391,8 +406,13 @@
     "price": 325000,
     "category": "travel",
     "blurb": "Two continents, seven passports, one very brave group chat.",
-    "image": "japan-greece.png",
-    "imageCredit": null,
+    "image": "japan-greece.jpg",
+    "imageCredit": {
+      "author": "Norbert Nagel",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 3.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Oia_-_Santorini_-_Greece_-_13.jpg"
+    },
     "priceVerified": "2026-08-02"
   },
   {
@@ -493,8 +513,13 @@
     "price": 7,
     "category": "splurges",
     "blurb": "Fifty percent sugar, extra ice, twenty minutes of your life.",
-    "image": "boba.png",
-    "imageCredit": null,
+    "image": "boba.jpg",
+    "imageCredit": {
+      "author": "Suiren2022",
+      "source": "Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Boba_at_Mr._Green_Bubble,_Menlo_Park,_CA.jpg"
+    },
     "priceVerified": "2026-08-02"
   },
   {
