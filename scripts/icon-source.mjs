@@ -559,6 +559,82 @@ export const ITEMS = [
     4.6
   )
 }
+,
+
+/* ============== ADDED AFTER THE FIRST BUILD ==============
+   Appended, never inserted. build-data.mjs derives share codes from array
+   position, so slotting these into their category blocks above would shift
+   every code after them and silently break links people have already shared.
+   The board reads src/data/items.json, which orders by price on its own. */
+{
+  id:'mercedes-eqs', name:'Mercedes EQS 450', price:106000, category:'Cars & Wheels',
+  blurb:'Silent, enormous, and shaped like a computer mouse.',
+  svg: svg(
+    '<path d="M10 66v-7c0-5 4-9 9-10 8-12 18-18 31-18s23 6 31 18c5 1 9 5 9 10v7"/>' +
+    G('M31 45c6-9 12-13 19-13s13 4 19 13z') +
+    '<path d="M21 52h58"/>' +
+    wheel(30) + wheel(70) + ground(),
+  )
+},
+{
+  id:'playa-vista', name:'New-build condo, Playa Vista CA', price:1150000, category:'Real Estate',
+  blurb:'Walkable, new, and indistinguishable from the unit next door.',
+  svg: svg(
+    '<path d="M25 76V26a4 4 0 0 1 4-4h42a4 4 0 0 1 4 4v50"/>' +
+    '<path d="M25 42h50"/>' +
+    '<path d="M25 59h50"/>' +
+    GR(34,29,13,9,1) +
+    '<rect x="55" y="29" width="13" height="9" rx="1"/>' +
+    '<rect x="34" y="46" width="13" height="9" rx="1"/>' +
+    '<rect x="55" y="46" width="13" height="9" rx="1"/>' +
+    ground(),
+    4.6
+  )
+},
+{
+  id:'cheviot-hills', name:'House with a pool, Cheviot Hills CA', price:3600000, category:'Real Estate',
+  blurb:'The pool is heated. So was the bidding war.',
+  svg: svg(
+    '<path d="M16 44L46 20l30 24"/>' +
+    '<path d="M23 40v24h46V40"/>' +
+    '<rect x="39" y="50" width="11" height="14" rx="1"/>' +
+    '<path d="M12 70h76v14a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4z"/>' +
+    G('M17 75h66v9a2 2 0 0 1-2 2H19a2 2 0 0 1-2-2z'),
+    4.6
+  )
+},
+{
+  id:'japan-greece', name:'Japan and Greece, first class, party of seven', price:325000, category:'Travel & Experiences',
+  blurb:'Two continents, seven passports, one very brave group chat.',
+  svg: svg(
+    /* A torii and a Doric column, and they have to not look like the same
+       goalpost at card size: the gate is wide with two lintels, the column is
+       narrow with a capital, a base and a flute up the middle. */
+    '<path d="M10 32h36"/>' +
+    '<path d="M14 41h28"/>' +
+    '<path d="M20 41v35"/>' +
+    '<path d="M36 41v35"/>' +
+    '<path d="M62 38h26"/>' +
+    '<path d="M68 44v26"/>' +
+    '<path d="M82 44v26"/>' +
+    '<path d="M75 46v22"/>' +
+    '<path d="M64 70h22"/>' +
+    GC(52,16,7) +
+    ground(),
+    4.6
+  )
+},
+{
+  id:'boba', name:'Boba tea', price:7, category:'Everyday Splurges',
+  blurb:'Fifty percent sugar, extra ice, twenty minutes of your life.',
+  svg: svg(
+    '<path d="M33 36h34l-4 46a6 6 0 0 1-6 5H43a6 6 0 0 1-6-5z"/>' +
+    '<path d="M28 36h44"/>' +
+    G('M57 36l4-21 5 1-4 20z') +
+    wheel(45,72,4) + wheel(56,77,4) + wheel(49,84,4),
+    4.6
+  )
+}
 ];
 
 export const CATEGORIES = [

@@ -341,7 +341,7 @@ describe('amount field', () => {
 });
 
 describe('data integrity', () => {
-  it('has 46 items', () => expect(items).toHaveLength(46));
+  it('has 51 items', () => expect(items).toHaveLength(51));
 
   it('has unique ids and share codes', () => {
     expect(new Set(items.map((i) => i.id)).size).toBe(items.length);
@@ -367,11 +367,15 @@ describe('data integrity', () => {
     expect(fractional).toEqual(['baja-burrito']);
   });
 
+  /* The burrito held the floor until boba turned up under it. Its blurb used to
+     claim the title outright, so the copy moved with the price — if something
+     cheaper is ever added again, that line has to be read as well as this one. */
   it('keeps the cheap end genuinely cheap', () => {
     const price = (id: string) => items.find((i) => i.id === id)!.price;
+    expect(price('boba')).toBe(7);
     expect(price('baja-burrito')).toBe(10.5);
     expect(price('phillips-bbq')).toBe(25);
-    expect(minPrice(items)).toBe(10.5);
+    expect(minPrice(items)).toBe(7);
   });
 
   /* CC BY and CC BY-SA oblige us to name the photographer, so a credited item
