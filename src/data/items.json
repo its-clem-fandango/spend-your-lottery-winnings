@@ -64,6 +64,17 @@
     "priceVerified": "2026-07-27"
   },
   {
+    "id": "mercedes-eqs",
+    "code": "1d",
+    "name": "Mercedes EQS 450",
+    "price": 106000,
+    "category": "cars",
+    "blurb": "Silent, enormous, and shaped like a computer mouse.",
+    "image": "mercedes-eqs.png",
+    "imageCredit": null,
+    "priceVerified": "2026-08-02"
+  },
+  {
     "id": "range-rover",
     "code": "04",
     "name": "Range Rover Autobiography",
@@ -144,6 +155,17 @@
     "priceVerified": "2026-07-27"
   },
   {
+    "id": "playa-vista",
+    "code": "1b",
+    "name": "New-build condo, Playa Vista CA",
+    "price": 1150000,
+    "category": "real-estate",
+    "blurb": "Walkable, new, and indistinguishable from the unit next door.",
+    "image": "playa-vista.png",
+    "imageCredit": null,
+    "priceVerified": "2026-08-02"
+  },
+  {
     "id": "porter-ranch",
     "code": "10",
     "name": "New build, Porter Ranch CA",
@@ -174,6 +196,17 @@
       "url": "https://commons.wikimedia.org/wiki/File:The_Bench,_Lake_Tahoe_8-10_(16219241767).jpg"
     },
     "priceVerified": "2026-07-27"
+  },
+  {
+    "id": "cheviot-hills",
+    "code": "1a",
+    "name": "House with a pool, Cheviot Hills CA",
+    "price": 3600000,
+    "category": "real-estate",
+    "blurb": "The pool is heated. So was the bidding war.",
+    "image": "cheviot-hills.png",
+    "imageCredit": null,
+    "priceVerified": "2026-08-02"
   },
   {
     "id": "aspen-chalet",
@@ -352,6 +385,17 @@
     "priceVerified": "2026-07-27"
   },
   {
+    "id": "japan-greece",
+    "code": "1e",
+    "name": "Japan and Greece, first class, party of seven",
+    "price": 325000,
+    "category": "travel",
+    "blurb": "Two continents, seven passports, one very brave group chat.",
+    "image": "japan-greece.png",
+    "imageCredit": null,
+    "priceVerified": "2026-08-02"
+  },
+  {
     "id": "superbowl",
     "code": "0g",
     "name": "Super Bowl suite, 12 seats",
@@ -443,12 +487,23 @@
     "priceVerified": "2026-07-28"
   },
   {
+    "id": "boba",
+    "code": "1c",
+    "name": "Boba tea",
+    "price": 7,
+    "category": "splurges",
+    "blurb": "Fifty percent sugar, extra ice, twenty minutes of your life.",
+    "image": "boba.png",
+    "imageCredit": null,
+    "priceVerified": "2026-08-02"
+  },
+  {
     "id": "baja-burrito",
     "code": "06",
     "name": "Baja Catch & Grill veggie burrito",
     "price": 10.5,
     "category": "splurges",
-    "blurb": "The cheapest thing on this entire board, and not the worst one.",
+    "blurb": "No longer the cheapest thing on this board, and still not the worst one.",
     "image": "baja-burrito.jpg",
     "imageCredit": {
       "author": "Andy Li",

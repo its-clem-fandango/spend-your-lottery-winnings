@@ -213,7 +213,7 @@ test.describe('overspending', () => {
   });
 
   test('offers the summary once nothing is affordable', async ({ page }) => {
-    // Has to leave less than the cheapest thing on the board, which is $10.50.
+    // Has to leave less than the cheapest thing on the board, which is $7 (boba).
     await startGame(page, '28005');
     await page.locator('.card[data-id="camry"] .hit').click();
     await expect(page.locator('.nudge')).toHaveClass(/on/);
